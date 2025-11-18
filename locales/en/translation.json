@@ -1,0 +1,367 @@
+
+{
+    "general": {
+        "appName": "GymPro Manager",
+        "loading": "Loading...",
+        "save": "Save",
+        "saveChanges": "Save Changes",
+        "cancel": "Cancel",
+        "close": "Close",
+        "edit": "Edit",
+        "delete": "Delete",
+        "add": "Add",
+        "submit": "Submit",
+        "actions": "Actions",
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "role": "Role",
+        "status": "Status",
+        "description": "Description",
+        "date": "Date",
+        "user": "User",
+        "notes": "Notes",
+        "welcome": "Welcome, {{name}}",
+        "success": "Success",
+        "error": "Error",
+        "warning": "Warning",
+        "info": "Info",
+        "confirmDelete": "Are you sure you want to delete this? This action cannot be undone.",
+        "unassigned": "Unassigned"
+    },
+    "roles": {
+        "ADMIN": "Administrator",
+        "CLIENT": "Client",
+        "TRAINER": "Trainer",
+        "RECEPTIONIST": "Receptionist",
+        "GENERAL_MANAGER": "General Manager",
+        "GROUP_INSTRUCTOR": "Group Instructor",
+        "NUTRITIONIST": "Nutritionist",
+        "PHYSIOTHERAPIST": "Physiotherapist"
+    },
+    "genders": {
+        "Masculino": "Male",
+        "Femenino": "Female",
+        "Otro": "Other",
+        "Prefiero no decirlo": "Prefer not to say"
+    },
+    "statuses": {
+        "membership": {
+            "Activo": "Active",
+            "Vencido": "Expired",
+            "Pendiente": "Pending"
+        },
+        "payment": {
+            "Completado": "Completed",
+            "Pendiente": "Pending",
+            "Fallido": "Failed"
+        },
+        "equipment": {
+            "Operativo": "Operational",
+            "En Reparación": "In Repair",
+            "Fuera de Servicio": "Out of Service"
+        }
+    },
+    "fitnessLevels": {
+        "Principiante": "Beginner",
+        "Intermedio": "Intermediate",
+        "Avanzado": "Advanced"
+    },
+    "splash": {
+        "tagline": "Forging your best version."
+    },
+    "login": {
+        "subtitle": "Select a role to log in for demonstration purposes.",
+        "loginAs": "Log in as {{role}}",
+        "staffOperational": "Operational and Service Staff",
+        "staffHealth": "Health and Wellness Staff"
+    },
+    "placeholders": {
+        "dashboardComingSoon": "Dashboard Coming Soon!",
+        "dashboardInConstruction": "The dashboard for the '{{role}}' role is currently under construction. Please check back later.",
+        "logout": "Log Out"
+    },
+    "app": {
+        "reportProblem": "Report a Problem",
+        "aiCoachError": "Sorry, I'm having trouble connecting right now. Please try again later.",
+        "nutritionLogError": "Could not analyze the meal at this time."
+    },
+    "components": {
+        "languageSwitcher": {
+            "language": "Language",
+            "english": "English",
+            "spanish": "Spanish"
+        },
+        "notificationBell": {
+            "notifications": "Notifications",
+            "markAllAsRead": "Mark all as read",
+            "noNotifications": "No notifications yet.",
+            "viewAll": "View All Notifications"
+        },
+        "notificationsView": {
+            "title": "Notifications",
+            "all": "All",
+            "unread": "Unread",
+            "noNotificationsHere": "You have no {{filter}} notifications."
+        },
+        "settingsView": {
+            "title": "Settings",
+            "appearance": "Appearance",
+            "darkMode": "Dark Mode",
+            "darkModeDesc": "Toggle between light and dark themes.",
+            "theme": "Theme",
+            "accountSecurity": "Account Security",
+            "passwordSuccess": "Password updated successfully!",
+            "passwordErrorCurrent": "Current password is incorrect.",
+            "passwordErrorMatch": "New passwords do not match.",
+            "passwordErrorLength": "New password must be at least 8 characters.",
+            "currentPassword": "Current Password",
+            "newPassword": "New Password",
+            "confirmNewPassword": "Confirm New Password",
+            "changePassword": "Change Password",
+            "privacyNotifications": "Privacy & Notifications",
+            "privacySettings": "Privacy Settings",
+            "profileVisibility": "Profile Visibility",
+            "profileVisibilityDesc": "Control who can see your profile.",
+            "activityVisibility": "Activity Visibility",
+            "activityVisibilityDesc": "Control who can see your workout activity.",
+            "showInSearch": "Appear in Searches",
+            "showInSearchDesc": "Allow other users to find you when searching.",
+            "privacyOptions": {
+                "everyone": "Everyone",
+                "connections": "Connections",
+                "me": "Only me"
+            },
+            "notificationPreferences": "Notification Preferences",
+            "newMessages": "New Messages",
+            "newMessagesDesc": "Receive notifications for new direct messages.",
+            "routineUpdates": "Routine Updates",
+            "routineUpdatesDesc": "Get notified when a trainer updates your routine.",
+            "classReminders": "Class Reminders",
+            "classRemindersDesc": "Get reminders for classes you've booked.",
+            "blockedUsers": "Blocked Users",
+            "noBlockedUsers": "You don't have any blocked users.",
+            "unblock": "Unblock",
+            "dangerZone": "Danger Zone",
+            "deactivateAccount": "Deactivate Account",
+            "deactivateAccountDesc": "This action is permanent and cannot be undone.",
+            "deactivate": "Deactivate",
+            "confirmDeactivation": "Are you sure you want to deactivate your account? This action is permanent and cannot be undone."
+        },
+        "reportIncidentModal": {
+            "title": "Report Equipment Problem",
+            "equipment": "Equipment",
+            "selectEquipment": "Select an item...",
+            "describeProblem": "Describe the Problem",
+            "descriptionPlaceholder": "e.g., The screen won't turn on, or there's a loud noise from the motor.",
+            "submitReport": "Submit Report",
+            "alert": "Please select a piece of equipment and describe the issue."
+        },
+        "shareRoutineModal": {
+            "title": "Share Routine With...",
+            "searchUser": "Search for a user...",
+            "send": "Send",
+            "successMessage_one": "Routine sent to {{count}} user!",
+            "successMessage_other": "Routine sent to {{count}} users!"
+        },
+        "messagingView": {
+            "title": "Community Chat",
+            "search": "Search users...",
+            "showActiveChats": "Show active chats only",
+            "noActiveChats": "No active chats found.",
+            "startMessaging": "Select a contact to start messaging.",
+            "messagePlaceholder": "Message {{name}}...",
+            "block": "Block",
+            "unblock": "Unblock",
+            "confirmBlock": "Are you sure you want to block {{name}}?",
+            "confirmUnblock": "Are you sure you want to unblock {{name}}?",
+            "filterByRole": "Filter by Role",
+            "apply": "Apply",
+            "clear": "Clear",
+            "today": "TODAY",
+            "yesterday": "YESTERDAY",
+            "myTrainers": "My Trainers",
+            "myClients": "My Clients",
+            "staff": "Staff",
+            "clients": "Clients"
+        }
+    },
+    "admin": {
+        "sidebar": {
+            "dashboard": "Dashboard",
+            "userManagement": "User Management",
+            "finances": "Finances",
+            "reports": "Reports",
+            "classSchedule": "Class Schedule",
+            "announcements": "Announcements",
+            "challenges": "Challenges",
+            "equipment": "Equipment",
+            "membershipTiers": "Membership Tiers",
+            "routineTemplates": "Routine Templates",
+            "notifications": "Notifications",
+            "appSettings": "App Settings",
+            "mySettings": "My Settings"
+        },
+        "dashboard": {
+            "title": "Dashboard",
+            "userManagement": "User Management",
+            "reports": "Reports",
+            "finances": "Finances",
+            "classSchedule": "Class Schedule",
+            "announcements": "Announcements",
+            "challenges": "Gym Challenges",
+            "equipment": "Equipment Management",
+            "membershipTiers": "Membership Tiers",
+            "routineTemplates": "Routine Templates",
+            "appSettings": "Application Settings",
+            "notifications": "Notifications",
+            "settings": "My Settings",
+            "welcome": "Welcome, {{name}}"
+        },
+        "overview": {
+            "totalMembers": "Total Members",
+            "activeMembers": "Active Members",
+            "totalTrainers": "Total Trainers",
+            "pendingPayments": "Pending Payments",
+            "unassignedClients": "Unassigned Clients",
+            "newMemberGrowth": "New Member Growth",
+            "newMembers": "New Members",
+            "membershipStatus": "Membership Status",
+            "recentActivity": "Recent Activity",
+            "joinedAs": "joined as {{role}}.",
+            "quickActions": "Quick Actions",
+            "addNewUser": "Add New User",
+            "viewReports": "View Reports",
+            "appSettings": "Application Settings"
+        },
+        "userManagement": {
+            "clients": "Clients",
+            "trainers": "Trainers",
+            "staffOperational": "Operational Staff",
+            "staffHealth": "Health Staff",
+            "exportCsv": "Export CSV",
+            "addUser": "Add {{type}}",
+            "searchPlaceholder": "Search by name or email...",
+            "allStatuses": "All Statuses",
+            "allTrainers": "All Trainers",
+            "unassigned": "Unassigned",
+            "usersSelected_one": "{{count}} user selected",
+            "usersSelected_other": "{{count}} users selected",
+            "deleteSelected": "Delete Selected",
+            "confirmDeleteSelected_one": "Are you sure you want to delete {{count}} user?",
+            "confirmDeleteSelected_other": "Are you sure you want to delete {{count}} users?",
+            "showingUsers": "Showing {{start}}-{{end}} of {{total}} users",
+            "page": "Page {{current}} of {{total}}",
+            "previous": "Previous",
+            "next": "Next",
+            "confirmDelete": "Are you sure you want to delete this user?",
+            "headers": {
+                "user": "User",
+                "status": "Status",
+                "trainers": "Trainers",
+                "joinDate": "Join Date",
+                "expiryDate": "Expiry Date",
+                "actions": "Actions",
+                "role": "Role",
+                "phone": "Phone"
+            },
+            "addUserModalTitle": "Add User",
+            "editUserModalTitle": "Edit User",
+            "modalTabs": {
+                "info": "Information",
+                "membership": "Membership",
+                "health": "Health",
+                "professional": "Professional",
+                "emergency": "Emergency"
+            },
+            "selectPlaceholder": "Select...",
+            "emailCannotBeChanged": "Email cannot be changed.",
+            "emergencyContact": "Emergency Contact",
+            "contactName": "Contact Name",
+            "contactPhone": "Contact Phone"
+        },
+        "userDetailsModal": {
+            "keyInfo": "Key Information",
+            "personalInfo": "Personal Information",
+            "healthFitness": "Health & Fitness",
+            "professionalInfo": "Professional Information",
+            "emergencyContact": "Emergency Contact",
+            "status": "Status",
+            "tier": "Tier",
+            "memberSince": "Member Since",
+            "expiresOn": "Expires On",
+            "clientLoad": "Client Load",
+            "clientsCount": "{{count}} clients",
+            "assignedTrainers": "Assigned Trainers",
+            "none": "None",
+            "phone": "Phone",
+            "gender": "Gender",
+            "age": "Age",
+            "ageYears": "{{age}} years",
+            "fitnessLevel": "Fitness Level",
+            "height": "Height",
+            "heightCm": "{{height}} cm",
+            "weight": "Weight",
+            "weightKg": "{{weight}} kg",
+            "fitnessGoals": "Fitness Goals",
+            "dietaryPreferences": "Dietary Preferences",
+            "medicalConditions": "Medical Conditions",
+            "skills": "Skills",
+            "name": "Name",
+            "close": "Close",
+            "editUser": "Edit User",
+            "notApplicable": "N/A"
+        },
+        "editProfileModal": {
+            "title": "Edit Profile",
+            "uploadPhoto": "Upload photo",
+            "randomAvatar": "Random avatar",
+            "personalInfo": "Personal Information",
+            "emergencyContact": "Emergency Contact",
+            "selectGender": "Select...",
+            "age": "Age",
+            "contactName": "Contact Name",
+            "contactPhone": "Contact Phone"
+        }
+    },
+    "receptionist": {
+        "checkIn": "Member Check-In",
+        "searchMember": "Search member...",
+        "checkInSuccess": "{{name}} checked in successfully!",
+        "checkInButton": "Check In",
+        "classSchedule": "Class Schedule",
+        "upcomingClasses": "Upcoming Classes",
+        "recentCheckIns": "Recent Check-Ins",
+        "memberStatus": "Member Status",
+        "checkedIn": "Checked In"
+    },
+    "manager": {
+        "overview": "Business Overview",
+        "staff": "Staff Management",
+        "revenue": "Revenue",
+        "mrr": "MRR",
+        "activeMembers": "Active Members",
+        "unpaidDues": "Unpaid Dues",
+        "keyMetrics": "Key Metrics"
+    },
+    "instructor": {
+        "myClasses": "My Classes",
+        "attendees": "Attendees",
+        "capacity": "Capacity"
+    },
+    "nutritionist": {
+        "clients": "Clients",
+        "nutritionLogs": "Nutrition Logs",
+        "selectClient": "Select a client to view logs",
+        "lastLog": "Last Log",
+        "aiAnalysis": "AI Analysis"
+    },
+    "physio": {
+        "patients": "Patients",
+        "progressNotes": "Progress Notes",
+        "selectPatient": "Select a patient to view notes",
+        "addNote": "Add Note",
+        "injuryStatus": "Injury Status",
+        "treatmentPlan": "Treatment Plan"
+    }
+}

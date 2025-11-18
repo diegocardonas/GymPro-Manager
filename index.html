@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GymPro Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                DEFAULT: 'hsl(var(--primary))',
+                foreground: 'hsl(var(--primary-foreground))',
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <script>
+      // On page load or when changing themes, best to add inline in `head` to avoid FOUC
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+    </script>
+    <style>
+      /* Custom scrollbar for better aesthetics */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      /* Light mode scrollbar */
+      ::-webkit-scrollbar-track {
+        background: #f1f5f9; /* coolGray-200 */
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #94a3b8; /* coolGray-400 */
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #64748b; /* coolGray-500 */
+      }
+      /* Dark mode scrollbar */
+      html.dark ::-webkit-scrollbar-track {
+        background: #1a202c; /* dark-800 */
+      }
+      html.dark ::-webkit-scrollbar-thumb {
+        background: #4a5568; /* dark-600 */
+      }
+      html.dark ::-webkit-scrollbar-thumb:hover {
+        background: #718096; /* dark-500 */
+      }
+
+      /* Chat background pattern */
+      .chat-bg {
+        background-color: #e5ddd5;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      }
+      html.dark .chat-bg {
+        background-color: #0d1418;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      }
+
+      /* Chat bubble tails */
+      .bubble-sent::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        right: -8px;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 10px 0 0 15px;
+        border-color: transparent transparent transparent hsl(var(--primary));
+      }
+      .bubble-received::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: -8px;
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 10px 15px 0 0;
+        border-color: transparent #e5e7eb transparent transparent;
+      }
+      html.dark .bubble-received::after {
+        border-color: transparent #374151 transparent transparent;
+      }
+
+      /* Responsive table styles for User Management */
+      @media (max-width: 767px) {
+        .responsive-table thead {
+          display: none;
+        }
+        .responsive-table tbody tr {
+          display: block;
+          margin-bottom: 1rem;
+          border-radius: 0.5rem;
+          overflow: hidden;
+          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        html:not(.dark) .responsive-table tbody tr {
+           border: 1px solid rgb(226, 232, 240); /* border-slate-200 */
+        }
+        html.dark .responsive-table tbody tr {
+           border: 1px solid rgb(55 65 81); /* border-gray-700 */
+        }
+        .responsive-table td {
+          display: block;
+          text-align: right;
+          padding-left: 50%;
+          position: relative;
+        }
+        html:not(.dark) .responsive-table td {
+            border-bottom: 1px solid rgb(226, 232, 240);
+        }
+        html.dark .responsive-table td {
+            border-bottom: 1px solid rgb(55 65 81);
+        }
+        .responsive-table tr:last-child {
+            margin-bottom: 0;
+        }
+        .responsive-table td:last-child {
+            border-bottom: 0;
+        }
+        .responsive-table td:before {
+          content: attr(data-label);
+          position: absolute;
+          left: 1rem;
+          width: 45%;
+          padding-right: 0.75rem;
+          white-space: nowrap;
+          text-align: left;
+          font-weight: 600;
+        }
+        html:not(.dark) .responsive-table td:before {
+          color: #64748b; /* text-slate-500 */
+        }
+        html.dark .responsive-table td:before {
+          color: #9ca3af; /* text-gray-400 */
+        }
+        /* Special handling for the first cell (user info) to act as a header */
+        .responsive-table td.user-cell {
+          display: flex;
+          align-items: center;
+          justify-content: flex-start; /* Align content to the left */
+          text-align: left;
+          padding-left: 1rem; /* Reset padding */
+        }
+        html:not(.dark) .responsive-table td.user-cell {
+           background-color: rgba(241, 245, 249, 0.5); /* bg-slate-100/50 */
+        }
+        html.dark .responsive-table td.user-cell {
+           background-color: rgba(55, 65, 81, 0.5); /* bg-gray-700/50 */
+        }
+        .responsive-table td.user-cell:before {
+          content: ""; /* No label for the main cell */
+        }
+        /* Special handling for actions cell */
+        .responsive-table td.actions-cell {
+            padding-left: 1rem; /* Reset padding */
+            text-align: center; /* Center buttons */
+        }
+        .responsive-table td.actions-cell:before {
+            content: ""; /* No label */
+        }
+        .responsive-table td.actions-cell > div {
+            justify-content: center; /* Center the flex container */
+        }
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      .animate-fade-in {
+        animation: fadeIn 0.3s ease-out forwards;
+      }
+
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-slide-up {
+        animation: slideUp 0.4s ease-out forwards;
+      }
+
+      @keyframes scaleIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      .animate-scale-in {
+        animation: scaleIn 0.2s ease-out forwards;
+      }
+
+      .delay-100 { animation-delay: 100ms; }
+      .delay-200 { animation-delay: 200ms; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "recharts": "https://aistudiocdn.com/recharts@^2.12.7",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.1",
+    "i18next": "https://aistudiocdn.com/i18next@^23.11.5",
+    "react-i18next": "https://aistudiocdn.com/react-i18next@^14.1.2",
+    "i18next-browser-languagedetector": "https://aistudiocdn.com/i18next-browser-languagedetector@^8.0.0",
+    "i18next-http-backend": "https://aistudiocdn.com/i18next-http-backend@^2.5.2"
+  }
+}
+</script>
+</head>
+  <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white transition-colors duration-300">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

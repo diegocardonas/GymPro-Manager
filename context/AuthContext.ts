@@ -1,0 +1,141 @@
+import { createContext } from 'react';
+import { User, Notification, PreEstablishedRoutine, Payment, WorkoutSession, GymClass, Message, Announcement, Challenge, Achievement, EquipmentItem, IncidentReport, AICoachMessage, NutritionLog } from '../types';
+
+interface AuthContextType {
+  currentUser: User | null;
+  users: User[];
+  myClients?: User[]; // For trainers
+  myTrainers?: User[]; // For clients
+  notifications: Notification[];
+  preEstablishedRoutines: PreEstablishedRoutine[];
+  payments: Payment[];
+  gymClasses: GymClass[];
+  messages: Message[];
+  announcements: Announcement[];
+  challenges: Challenge[];
+  achievements: Achievement[];
+  equipment: EquipmentItem[];
+  incidents: IncidentReport[];
+
+
+  logout: () => void;
+  updateCurrentUser: (user: User) => void;
+  addUser: (user: User) => void;
+  updateUser: (user: User) => void;
+  deleteUser: (userId: string) => void;
+  toggleBlockUser: (userIdToBlock: string) => void;
+
+  markNotificationAsRead: (notificationId: string) => void;
+  markAllNotificationsAsRead: (userId: string) => void;
+  deleteNotification: (notificationId: string) => void;
+  addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'isRead'>) => void;
+  
+  addRoutineTemplate: (routine: PreEstablishedRoutine) => void;
+  updateRoutineTemplate: (routine: PreEstablishedRoutine) => void;
+  deleteRoutineTemplate: (routineId: string) => void;
+
+  logWorkout: (userId: string, session: WorkoutSession) => void;
+
+  addGymClass: (gymClass: Omit<GymClass, 'id'>) => void;
+  updateGymClass: (gymClass: GymClass) => void;
+  deleteGymClass: (classId: string) => void;
+  bookClass: (classId: string, userId: string) => string; // returns success/error message
+  
+  sendMessage: (message: Omit<Message, 'id' | 'timestamp' | 'isRead'>) => void;
+  markMessagesAsRead: (conversationId: string, userId: string) => void;
+
+  addAnnouncement: (announcement: Omit<Announcement, 'id' | 'timestamp'>) => void;
+  updateAnnouncement: (announcement: Announcement) => void;
+  deleteAnnouncement: (announcementId: string) => void;
+  
+  sendAICoachMessage: (userId: string, message: AICoachMessage) => Promise<AICoachMessage | null>;
+  
+  addChallenge: (challenge: Omit<Challenge, 'id' | 'participants'>) => void;
+  updateChallenge: (challenge: Challenge) => void;
+  deleteChallenge: (challengeId: string) => void;
+  joinChallenge: (challengeId: string, userId: string) => void;
+
+  unlockAchievement: (userId: string, achievementId: string) => void;
+  
+  addEquipment: (equipment: Omit<EquipmentItem, 'id'>) => void;
+  updateEquipment: (equipment: EquipmentItem) => void;
+  deleteEquipment: (equipmentId: string) => void;
+
+  reportIncident: (incident: Omit<IncidentReport, 'id' | 'timestamp' | 'isResolved'>) => void;
+  resolveIncident: (incidentId: string) => void;
+  
+  addNutritionLog: (userId: string, log: Omit<NutritionLog, 'id'>) => Promise<void>;
+  
+  // FIX: Add login and register to satisfy the unused LoginScreen component
+  login: (email: string, password: string) => Promise<string | void>;
+  register: (user: any) => Promise<string | void>;
+}
+
+export const AuthContext = createContext<AuthContextType>({
+  currentUser: null,
+  users: [],
+  myClients: [],
+  myTrainers: [],
+  notifications: [],
+  preEstablishedRoutines: [],
+  payments: [],
+  gymClasses: [],
+  messages: [],
+  announcements: [],
+  challenges: [],
+  achievements: [],
+  equipment: [],
+  incidents: [],
+
+  logout: () => {},
+  updateCurrentUser: () => {},
+  addUser: () => {},
+  updateUser: () => {},
+  deleteUser: () => {},
+  toggleBlockUser: () => {},
+
+  markNotificationAsRead: () => {},
+  markAllNotificationsAsRead: () => {},
+  deleteNotification: () => {},
+  addNotification: () => {},
+  
+  addRoutineTemplate: () => {},
+  updateRoutineTemplate: () => {},
+  deleteRoutineTemplate: () => {},
+
+  logWorkout: () => {},
+  
+  addGymClass: () => {},
+  updateGymClass: () => {},
+  deleteGymClass: () => {},
+  bookClass: () => '',
+  
+  sendMessage: () => {},
+  markMessagesAsRead: () => {},
+
+  addAnnouncement: () => {},
+  updateAnnouncement: () => {},
+  deleteAnnouncement: () => {},
+  
+  sendAICoachMessage: async () => null,
+  
+  addChallenge: () => {},
+  updateChallenge: () => {},
+  deleteChallenge: () => {},
+  joinChallenge: () => {},
+
+  unlockAchievement: () => {},
+
+  addEquipment: () => {},
+  updateEquipment: () => {},
+  deleteEquipment: () => {},
+
+  reportIncident: () => {},
+  resolveIncident: () => {},
+  
+  addNutritionLog: async () => {},
+
+  // FIX: Add dummy implementations for login and register
+  login: async () => {},
+  register: async () => {},
+});

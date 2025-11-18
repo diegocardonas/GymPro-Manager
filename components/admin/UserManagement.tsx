@@ -1,0 +1,480 @@
+import React, { useState, useMemo, useContext, useEffect } from 'react';
+import { User, Role, MembershipStatus, SortConfig, FitnessLevel, MembershipTier } from '../../types';
+import { AuthContext } from '../../context/AuthContext';
+import { PencilIcon } from '../icons/PencilIcon';
+import { TrashIcon } from '../icons/TrashIcon';
+import { PlusIcon } from '../icons/PlusIcon';
+import { ChevronUpIcon } from '../icons/ChevronUpIcon';
+import { ChevronDownIcon } from '../icons/ChevronDownIcon';
+import { DashboardFilter } from '../AdminDashboard';
+import { MOCK_TIERS } from '../../data/membershipTiers';
+import { XCircleIcon } from '../icons/XCircleIcon';
+
+const ITEMS_PER_PAGE = 10;
+
+type UserTab = Role.CLIENT | Role.TRAINER | 'OPERATIONAL' | 'HEALTH';
+
+const getNestedValue = (obj: any, path: string) => path.split('.').reduce((o, k) => (o && o[k] != null) ? o[k] : null, obj);
+
+const exportToCSV = (users: User[], headers: {key: string, label: string}[], filename: string, allTrainers: User[]) => {
+    const csvRows = [];
+    // Add headers
+    csvRows.push(headers.map(h => h.label).join(','));
+
+    // Add data rows
+    for (const user of users) {
+        const values = headers.map(header => {
+            let cellValue;
+            if (header.key === 'trainerIds' && user.role === Role.CLIENT) {
+                const trainerNames = allTrainers
+                    .filter(t => (user.trainerIds || []).includes(t.id))
+                    .map(t => t.name)
+                    .join('; '); // Use semicolon to avoid issues with comma delimiter
+                cellValue = trainerNames;
+            } else {
+                cellValue = getNestedValue(user, header.key);
+            }
+            const value = cellValue !== null ? `"${String(cellValue).replace(/"/g, '""')}"` : '""';
+            return value;
+        });
+        csvRows.push(values.join(','));
+    }
+
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', filename);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+interface UserManagementProps {
+    initialFilter: DashboardFilter | null;
+    onFilterClear: () => void;
+    onViewUserDetails: (user: User) => void;
+}
+
+const UserManagement: React.FC<UserManagementProps> = ({ initialFilter, onFilterClear, onViewUserDetails }) => {
+    const { users, addUser, updateUser, deleteUser } = useContext(AuthContext);
+    const [activeTab, setActiveTab] = useState<UserTab>(Role.CLIENT);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sortConfig, setSortConfig] = useState<SortConfig | null>({ key: 'joinDate', direction: 'descending' });
+    const [currentPage, setCurrentPage] = useState(1);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [statusFilter, setStatusFilter] = useState<MembershipStatus | null>(null);
+    const [trainerFilter, setTrainerFilter] = useState<string | null>(null);
+    const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+
+    useEffect(() => {
+        if (initialFilter) {
+            if (initialFilter.type === 'role') {
+                setActiveTab(initialFilter.value as UserTab);
+                setStatusFilter(null);
+                setTrainerFilter(null);
+            } else if (initialFilter.type === 'status') {
+                setActiveTab(Role.CLIENT);
+                setStatusFilter(initialFilter.value);
+                setTrainerFilter(null);
+            } else if (initialFilter.type === 'unassigned') {
+                setActiveTab(Role.CLIENT);
+                setStatusFilter(null);
+                setTrainerFilter('unassigned');
+            }
+            setCurrentPage(1); // Reset to first page when filter changes
+        }
+    }, [initialFilter]);
+
+    const trainers = useMemo(() => users.filter(u => u.role === Role.TRAINER), [users]);
+    
+    const usersForTab = useMemo(() => {
+        if (activeTab === 'OPERATIONAL') {
+            return users.filter(u => [Role.RECEPTIONIST, Role.GENERAL_MANAGER, Role.GROUP_INSTRUCTOR].includes(u.role));
+        }
+        if (activeTab === 'HEALTH') {
+            return users.filter(u => [Role.NUTRITIONIST, Role.PHYSIOTHERAPIST].includes(u.role));
+        }
+        return users.filter(u => u.role === activeTab);
+    }, [users, activeTab]);
+
+    const filteredUsers = useMemo(() => {
+        return usersForTab.filter(user => {
+            const searchMatch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || user.email.toLowerCase().includes(searchTerm.toLowerCase());
+            const statusMatch = !statusFilter || (user.role === Role.CLIENT && user.membership.status === statusFilter);
+            
+            let trainerMatch = true;
+            if (trainerFilter) {
+                if (trainerFilter === 'unassigned') {
+                    trainerMatch = user.role === Role.CLIENT && (!user.trainerIds || user.trainerIds.length === 0);
+                } else {
+                    trainerMatch = user.role === Role.CLIENT && !!user.trainerIds?.includes(trainerFilter);
+                }
+            }
+
+            return searchMatch && statusMatch && trainerMatch;
+        });
+    }, [usersForTab, searchTerm, statusFilter, trainerFilter]);
+
+    const sortedUsers = useMemo(() => {
+        let sortableUsers = [...filteredUsers];
+        if (sortConfig !== null) {
+            sortableUsers.sort((a, b) => {
+                const aValue = getNestedValue(a, sortConfig.key);
+                const bValue = getNestedValue(b, sortConfig.key);
+                if (aValue < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
+                if (aValue > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
+                return 0;
+            });
+        }
+        return sortableUsers;
+    }, [filteredUsers, sortConfig]);
+
+    const paginatedUsers = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        return sortedUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    }, [sortedUsers, currentPage]);
+
+    const totalPages = Math.ceil(sortedUsers.length / ITEMS_PER_PAGE);
+
+    const requestSort = (key: SortConfig['key']) => {
+        let direction: 'ascending' | 'descending' = 'ascending';
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') direction = 'descending';
+        setSortConfig({ key, direction });
+    };
+
+    const getSortIcon = (key: string) => {
+        if (!sortConfig || sortConfig.key !== key) return null;
+        return sortConfig.direction === 'ascending' ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" />;
+    };
+
+    const handleOpenModal = (user: User | null) => {
+        setSelectedUser(user);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedUser(null);
+    };
+
+    const handleSaveUser = (user: User) => {
+        if (user.id && user.id !== '') updateUser(user);
+        else addUser({ ...user, id: String(Date.now() + Math.random()) });
+        handleCloseModal();
+    };
+
+    const handleDeleteUser = (userId: string) => {
+        if (window.confirm('¿Estás seguro de que quieres eliminar este usuario?')) deleteUser(userId);
+    };
+
+    const handleTabClick = (tab: UserTab) => {
+        setActiveTab(tab);
+        setCurrentPage(1);
+        setStatusFilter(null);
+        setTrainerFilter(null);
+        onFilterClear();
+    };
+
+    const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.checked) setSelectedUserIds(paginatedUsers.map(u => u.id));
+        else setSelectedUserIds([]);
+    };
+
+    const handleSelectRow = (userId: string) => {
+        setSelectedUserIds(prev => prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]);
+    };
+
+    const handleDeleteSelected = () => {
+        if (window.confirm(`¿Estás seguro de que quieres eliminar a ${selectedUserIds.length} usuarios?`)) {
+            selectedUserIds.forEach(id => deleteUser(id));
+            setSelectedUserIds([]);
+        }
+    };
+    
+    const headers = activeTab === Role.CLIENT ? [
+        { key: 'name', label: 'Usuario' }, { key: 'membership.status', label: 'Estado' },
+        { key: 'trainerIds', label: 'Entrenadores' }, { key: 'joinDate', label: 'Fecha de Ingreso' },
+        { key: 'membership.endDate', label: 'Fecha de Vencimiento' }, { key: 'actions', label: 'Acciones', sortable: false }
+    ] : [
+        { key: 'name', label: 'Usuario' }, { key: 'role', label: 'Rol' },
+        { key: 'phone', label: 'Teléfono' }, { key: 'joinDate', label: 'Fecha de Ingreso' }, 
+        { key: 'actions', label: 'Acciones', sortable: false }
+    ];
+
+    return (
+        <div className="bg-white dark:bg-gray-800/50 rounded-xl ring-1 ring-black/5 dark:ring-white/10 w-full">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 space-y-4">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div className="flex border-b border-gray-200 dark:border-gray-700 w-full sm:w-auto overflow-x-auto">
+                        <button onClick={() => handleTabClick(Role.CLIENT)} className={`flex-1 sm:flex-initial px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === Role.CLIENT ? 'border-b-2 border-primary text-primary' : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}>Clientes</button>
+                        <button onClick={() => handleTabClick(Role.TRAINER)} className={`flex-1 sm:flex-initial px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === Role.TRAINER ? 'border-b-2 border-primary text-primary' : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}>Entrenadores</button>
+                        <button onClick={() => handleTabClick('OPERATIONAL')} className={`flex-1 sm:flex-initial px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'OPERATIONAL' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}>Personal Operativo</button>
+                        <button onClick={() => handleTabClick('HEALTH')} className={`flex-1 sm:flex-initial px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap ${activeTab === 'HEALTH' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'}`}>Personal de Salud</button>
+                    </div>
+                     <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                        <button onClick={() => exportToCSV(sortedUsers, headers.filter(h => h.key !== 'actions'), `gympro_${activeTab.toLowerCase()}_export.csv`, trainers)} className="w-full sm:w-auto px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg font-semibold transition-colors text-white">Exportar CSV</button>
+                        <button onClick={() => handleOpenModal(null)} className="w-full sm:w-auto px-4 py-2 bg-primary hover:bg-primary/90 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2 text-primary-foreground">
+                            <PlusIcon className="h-5 w-5" />
+                            <span>Añadir {activeTab === Role.CLIENT ? 'Cliente' : activeTab === Role.TRAINER ? 'Entrenador' : 'Personal'}</span>
+                        </button>
+                    </div>
+                </div>
+                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <input type="text" placeholder={`Buscar por nombre o email...`} value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="sm:col-span-1 w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary px-4 py-2 text-gray-800 dark:text-gray-200" />
+                     {activeTab === Role.CLIENT && <>
+                        <select value={statusFilter || ''} onChange={e => setStatusFilter(e.target.value as MembershipStatus || null)} className="sm:col-span-1 w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary px-4 py-2 text-gray-800 dark:text-gray-200">
+                            <option value="">Todos los Estados</option>
+                            {Object.values(MembershipStatus).map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                        <select value={trainerFilter || ''} onChange={e => setTrainerFilter(e.target.value || null)} className="sm:col-span-1 w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary px-4 py-2 text-gray-800 dark:text-gray-200">
+                            <option value="">Todos los Entrenadores</option>
+                            <option value="unassigned">Sin Asignar</option>
+                            {trainers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                        </select>
+                     </>}
+                </div>
+                {selectedUserIds.length > 0 && 
+                    <div className="p-2 bg-primary/10 rounded-lg flex items-center justify-between">
+                        <span className="text-sm font-semibold text-primary">{selectedUserIds.length} usuarios seleccionados</span>
+                        <div className="space-x-2">
+                           <button onClick={handleDeleteSelected} className="px-3 py-1 text-xs font-semibold text-white bg-red-600/80 rounded-md hover:bg-red-600">Eliminar Seleccionados</button>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div className="overflow-x-auto">
+                <table className="w-full text-left responsive-table">
+                    <thead className="bg-gray-50 dark:bg-gray-800 text-sm text-gray-500 dark:text-gray-400 hidden md:table-header-group">
+                        <tr>
+                            <th className="p-4 w-12"><input type="checkbox" onChange={handleSelectAll} checked={selectedUserIds.length === paginatedUsers.length && paginatedUsers.length > 0} className="rounded" /></th>
+                            {headers.map(header => (
+                                <th key={header.key} className="p-4 font-semibold">
+                                     {header.sortable === false ? header.label : <button onClick={() => requestSort(header.key as any)} className="flex items-center space-x-1"><span>{header.label}</span>{getSortIcon(header.key)}</button>}
+                                </th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {paginatedUsers.map(user => <UserRow key={user.id} user={user} trainers={trainers} onEdit={handleOpenModal} onDelete={handleDeleteUser} onSelect={handleSelectRow} isSelected={selectedUserIds.includes(user.id)} onViewDetails={onViewUserDetails} isClientTab={activeTab === Role.CLIENT} />)}
+                    </tbody>
+                </table>
+            </div>
+             <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                <p>Mostrando {(paginatedUsers.length > 0 ? (currentPage-1)*ITEMS_PER_PAGE+1 : 0)}-{(currentPage-1)*ITEMS_PER_PAGE+paginatedUsers.length} de {sortedUsers.length} usuarios</p>
+                <div className="flex items-center space-x-2">
+                    <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded disabled:opacity-50">Anterior</button>
+                     <span>Página {currentPage} de {totalPages || 1}</span>
+                    <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded disabled:opacity-50">Siguiente</button>
+                </div>
+            </div>
+             {isModalOpen && <UserModal user={selectedUser} activeTab={activeTab} trainers={trainers} onSave={handleSaveUser} onClose={handleCloseModal} />}
+        </div>
+    );
+};
+
+const UserRow: React.FC<{ user: User; trainers: User[]; onEdit: (user: User) => void; onDelete: (userId: string) => void; onSelect: (userId: string) => void; isSelected: boolean; onViewDetails: (user: User) => void; isClientTab: boolean; }> = ({ user, trainers, onEdit, onDelete, onSelect, isSelected, onViewDetails, isClientTab }) => {
+    const trainerNames = useMemo(() => trainers.filter(t => user.trainerIds?.includes(t.id)).map(t => t.name).join(', ') || 'No asignado', [trainers, user.trainerIds]);
+    // FIX: Corrected enum members from Spanish (e.g., ACTIVO) to English (e.g., ACTIVE) to match the enum definition.
+    const statusClasses: Record<MembershipStatus, string> = {
+        [MembershipStatus.ACTIVE]: 'bg-green-100 text-green-800 dark:bg-green-500/10 dark:text-green-400',
+        [MembershipStatus.EXPIRED]: 'bg-red-100 text-red-800 dark:bg-red-500/10 dark:text-red-400',
+        [MembershipStatus.PENDING]: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/10 dark:text-yellow-400',
+    };
+
+    return (
+        <tr className="md:border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-colors duration-200">
+            <td className="p-4 hidden md:table-cell"><input type="checkbox" checked={isSelected} onChange={() => onSelect(user.id)} className="rounded"/></td>
+            <td data-label="Usuario" className="p-4 flex items-center space-x-3 user-cell">
+                <img src={user.avatarUrl} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
+                <div>
+                    <button onClick={() => onViewDetails(user)} className="font-semibold text-gray-900 dark:text-white text-left hover:underline">{user.name}</button>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
+                </div>
+            </td>
+            {isClientTab ? (
+                <>
+                    <td data-label="Estado" className="p-4"><span className={`px-2 py-1 text-xs font-semibold rounded-full ${statusClasses[user.membership.status]}`}>{user.membership.status}</span></td>
+                    <td data-label="Entrenadores" className="p-4 text-gray-600 dark:text-gray-300">{trainerNames}</td>
+                    <td data-label="Fecha de Ingreso" className="p-4 text-gray-600 dark:text-gray-300">{new Date(user.joinDate).toLocaleDateString()}</td>
+                    <td data-label="Fecha de Vencimiento" className="p-4 text-gray-600 dark:text-gray-300">{new Date(user.membership.endDate).toLocaleDateString()}</td>
+                </>
+            ) : (
+                 <>
+                    <td data-label="Rol" className="p-4 text-gray-600 dark:text-gray-300 capitalize">{user.role.toLowerCase().replace(/_/g, ' ')}</td>
+                    <td data-label="Teléfono" className="p-4 text-gray-600 dark:text-gray-300">{user.phone}</td>
+                    <td data-label="Fecha de Ingreso" className="p-4 text-gray-600 dark:text-gray-300">{new Date(user.joinDate).toLocaleDateString()}</td>
+                </>
+            )}
+            <td className="p-4 actions-cell">
+                <div className="flex space-x-2">
+                    <button onClick={() => onEdit(user)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors"><PencilIcon className="h-5 w-5" /></button>
+                    <button onClick={() => onDelete(user.id)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"><TrashIcon className="h-5 w-5" /></button>
+                </div>
+            </td>
+        </tr>
+    );
+};
+
+const UserModal: React.FC<{ user: User | null; activeTab: UserTab; trainers: User[]; onSave: (user: User) => void; onClose: () => void }> = ({ user, activeTab, trainers, onSave, onClose }) => {
+    const getInitialRole = () => {
+        if (user) return user.role;
+        if (activeTab === 'OPERATIONAL') return Role.RECEPTIONIST;
+        if (activeTab === 'HEALTH') return Role.NUTRITIONIST;
+        return activeTab;
+    }
+    // FIX: Corrected enum member from Spanish (PENDIENTE) to English (PENDING) to match the enum definition.
+    const defaultUser: User = { id: '', name: '', email: '', phone: '', avatarUrl: `https://picsum.photos/seed/${Date.now()}/200`, role: getInitialRole(), joinDate: new Date().toISOString().split('T')[0], membership: { status: MembershipStatus.PENDING, startDate: new Date().toISOString().split('T')[0], endDate: '', tierId: MOCK_TIERS[0].id }, trainerIds: [], assignedRoutines: [], progressNotes: [] };
+    
+    const [formData, setFormData] = useState<User>(user || defaultUser);
+    const [modalActiveTab, setModalActiveTab] = useState('info');
+    
+    const isStaff = ![Role.CLIENT].includes(formData.role);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        if (['status', 'endDate', 'startDate', 'tierId'].includes(name)) setFormData(prev => ({ ...prev, membership: { ...prev.membership, [name]: value } }));
+        else if (['emergencyContactName', 'emergencyContactPhone'].includes(name)) {
+            const field = name === 'emergencyContactName' ? 'name' : 'phone';
+            setFormData(prev => ({...prev, emergencyContact: { ...prev.emergencyContact, [field]: value, name: prev.emergencyContact?.name || '', phone: prev.emergencyContact?.phone || ''}}));
+        }
+        else setFormData(prev => ({ ...prev, [name]: value as Role }));
+    };
+
+    const handleTrainerChange = (trainerId: string) => {
+        setFormData(prev => {
+            const currentTrainerIds = prev.trainerIds || [];
+            const newTrainerIds = currentTrainerIds.includes(trainerId)
+                ? currentTrainerIds.filter(id => id !== trainerId)
+                : [...currentTrainerIds, trainerId];
+            return { ...prev, trainerIds: newTrainerIds };
+        });
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onSave(formData);
+    };
+
+    const modalTabs = isStaff ? ['info', 'professional', 'emergency'] : ['info', 'membership', 'health', 'emergency'];
+    const modalTabTitles: { [key: string]: string } = {
+        info: 'Información',
+        membership: 'Membresía',
+        health: 'Salud',
+        professional: 'Profesional',
+        emergency: 'Emergencia'
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+            <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col animate-scale-in">
+                <h2 className="text-2xl font-bold p-6 border-b border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white">{user ? 'Editar Usuario' : 'Añadir Usuario'}</h2>
+                <div className="border-b border-gray-200 dark:border-gray-700 px-6">
+                    <nav className="-mb-px flex space-x-6">
+                        {modalTabs.map(tab => (
+                            <button type="button" key={tab} onClick={() => setModalActiveTab(tab)} className={`capitalize py-3 px-1 border-b-2 font-medium text-sm ${modalActiveTab === tab ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'}`}>{modalTabTitles[tab]}</button>
+                        ))}
+                    </nav>
+                </div>
+                <div className="p-6 space-y-4 overflow-y-auto">
+                    {modalActiveTab === 'info' && (<>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {!user && (activeTab === 'OPERATIONAL' || activeTab === 'HEALTH') && (
+                                <div className="sm:col-span-2">
+                                    <label className="block text-sm font-medium">Rol</label>
+                                    <select name="role" value={formData.role} onChange={handleChange} className="mt-1 block w-full input-style" required>
+                                        {(activeTab === 'OPERATIONAL' 
+                                          ? [Role.RECEPTIONIST, Role.GENERAL_MANAGER, Role.GROUP_INSTRUCTOR] 
+                                          : [Role.NUTRITIONIST, Role.PHYSIOTHERAPIST]
+                                        ).map(r => <option key={r} value={r} className="capitalize">{r.toLowerCase().replace(/_/g, ' ')}</option>)}
+                                    </select>
+                                </div>
+                            )}
+                            <div><label className="block text-sm font-medium">Nombre</label><input type="text" name="name" value={formData.name} onChange={handleChange} className="mt-1 block w-full input-style" required /></div>
+                            <div><label className="block text-sm font-medium">Email</label><input type="email" name="email" value={formData.email} onChange={handleChange} className="mt-1 block w-full input-style" required /></div>
+                            <div><label className="block text-sm font-medium">Teléfono</label><input type="tel" name="phone" value={formData.phone} onChange={handleChange} className="mt-1 block w-full input-style" /></div>
+                            <div><label className="block text-sm font-medium">Género</label><select name="gender" value={formData.gender || ''} onChange={handleChange} className="mt-1 block w-full input-style"><option value="">Seleccionar...</option><option>Masculino</option><option>Femenino</option><option>Otro</option><option>Prefiero no decirlo</option></select></div>
+                            <div><label className="block text-sm font-medium">Edad</label><input type="number" name="age" value={formData.age || ''} onChange={handleChange} className="mt-1 block w-full input-style" /></div>
+                        </div>
+                    </>)}
+                    {modalActiveTab === 'membership' && !isStaff && (<>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div><label className="block text-sm font-medium">Estado</label><select name="status" value={formData.membership.status} onChange={handleChange} className="mt-1 block w-full input-style">{Object.values(MembershipStatus).map(s=><option key={s}>{s}</option>)}</select></div>
+                            <div>
+                                <label className="block text-sm font-medium">Nivel de Membresía</label>
+                                <select name="tierId" value={formData.membership.tierId} onChange={handleChange} className="mt-1 block w-full input-style">
+                                    {MOCK_TIERS.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                                </select>
+                            </div>
+                            <div className="sm:col-span-2">
+                                <label className="block text-sm font-medium">Entrenadores</label>
+                                <div className="mt-2 grid grid-cols-2 gap-2 border rounded-md p-2 max-h-40 overflow-y-auto input-style">
+                                    {trainers.map(t => (
+                                        <label key={t.id} className="flex items-center space-x-2 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600/50">
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.trainerIds?.includes(t.id)}
+                                                onChange={() => handleTrainerChange(t.id)}
+                                                className="form-checkbox h-4 w-4 rounded text-primary focus:ring-primary"
+                                            />
+                                            <span className="text-sm">{t.name}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                            <div><label className="block text-sm font-medium">Fecha de Inicio</label><input type="date" name="startDate" value={formData.membership.startDate.split('T')[0]} onChange={handleChange} className="mt-1 block w-full input-style" /></div>
+                            <div><label className="block text-sm font-medium">Fecha de Vencimiento</label><input type="date" name="endDate" value={formData.membership.endDate.split('T')[0]} onChange={handleChange} className="mt-1 block w-full input-style" required /></div>
+                        </div>
+                    </>)}
+                    {modalActiveTab === 'health' && !isStaff && (<>
+                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div><label className="block text-sm font-medium">Altura (cm)</label><input type="number" name="height" value={formData.height || ''} onChange={handleChange} className="mt-1 block w-full input-style" /></div>
+                            <div><label className="block text-sm font-medium">Peso (kg)</label><input type="number" name="weight" value={formData.weight || ''} onChange={handleChange} className="mt-1 block w-full input-style" /></div>
+                             <div><label className="block text-sm font-medium">Nivel Físico</label><select name="fitnessLevel" value={formData.fitnessLevel || ''} onChange={handleChange} className="mt-1 block w-full input-style"><option value="">Seleccionar...</option>{Object.values(FitnessLevel).map(l=><option key={l}>{l}</option>)}</select></div>
+                        </div>
+                        <div><label className="block text-sm font-medium">Metas de Fitness</label><textarea name="fitnessGoals" value={formData.fitnessGoals || ''} onChange={handleChange} rows={3} className="mt-1 block w-full input-style" /></div>
+                        <div><label className="block text-sm font-medium">Preferencias Alimentarias</label><textarea name="dietaryPreferences" value={formData.dietaryPreferences || ''} onChange={handleChange} rows={3} className="mt-1 block w-full input-style" /></div>
+                        <div><label className="block text-sm font-medium">Condiciones Médicas</label><textarea name="medicalConditions" value={formData.medicalConditions || ''} onChange={handleChange} rows={3} className="mt-1 block w-full input-style" /></div>
+                    </>)}
+                    {modalActiveTab === 'professional' && isStaff && (<>
+                        <div><label className="block text-sm font-medium">Habilidades</label><textarea name="skills" value={formData.skills || ''} onChange={handleChange} rows={4} className="mt-1 block w-full input-style" placeholder="p. ej. Yoga, CrossFit, Nutrición" /></div>
+                    </>)}
+                    {modalActiveTab === 'emergency' && (<>
+                        <h3 className="text-lg font-semibold border-b pb-2">Contacto de Emergencia</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div><label className="block text-sm font-medium">Nombre de Contacto</label><input type="text" name="emergencyContactName" value={formData.emergencyContact?.name || ''} onChange={handleChange} className="mt-1 block w-full input-style" /></div>
+                            <div><label className="block text-sm font-medium">Teléfono de Contacto</label><input type="tel" name="emergencyContactPhone" value={formData.emergencyContact?.phone || ''} onChange={handleChange} className="mt-1 block w-full input-style" /></div>
+                        </div>
+                    </>)}
+                </div>
+                <div className="flex justify-end space-x-4 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 sticky bottom-0">
+                    <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 rounded-lg font-semibold">Cancelar</button>
+                    <button type="submit" className="px-4 py-2 bg-primary hover:bg-primary/90 rounded-lg font-semibold text-primary-foreground">Guardar</button>
+                </div>
+            </form>
+            {/* FIX: Removed non-standard "jsx" prop from style tag. */}
+            <style>{`
+                .input-style {
+                    background-color: #f3f4f6; /* bg-gray-100 */
+                    border: 1px solid #d1d5db; /* border-gray-300 */
+                    border-radius: 0.375rem; /* rounded-md */
+                    color: #111827; /* text-gray-900 */
+                    padding: 0.5rem;
+                }
+                .dark .input-style {
+                    background-color: #374151; /* dark:bg-gray-700 */
+                    border-color: #4b5563; /* dark:border-gray-600 */
+                    color: #f9fafb; /* dark:text-white */
+                }
+                .input-style:focus {
+                    --tw-ring-color: hsl(var(--primary));
+                    border-color: hsl(var(--primary));
+                }
+            `}</style>
+        </div>
+    );
+};
+
+export default UserManagement;

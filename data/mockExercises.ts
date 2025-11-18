@@ -1,0 +1,83 @@
+export const MOCK_EXERCISES: string[] = [
+    // Barbell Exercises
+    'Barbell Bench Press',
+    'Barbell Squat',
+    'Barbell Deadlift',
+    'Overhead Press (Barbell)',
+    'Barbell Row',
+    'Barbell Hip Thrust',
+    'Good Mornings',
+    'Barbell Lunge',
+    'Front Squat',
+    'Barbell Bicep Curl',
+    'Skull Crushers',
+
+    // Dumbbell Exercises
+    'Dumbbell Bench Press',
+    'Incline Dumbbell Press',
+    'Dumbbell Flyes',
+    'Dumbbell Shoulder Press',
+    'Lateral Raises',
+    'Front Raises',
+    'Bent-Over Dumbbell Rows',
+    'Dumbbell Bicep Curls',
+    'Hammer Curls',
+    'Dumbbell Tricep Extension',
+    'Goblet Squat',
+    'Dumbbell Lunges',
+    'Romanian Deadlift (Dumbbell)',
+    
+    // Bodyweight & Calisthenics
+    'Push-ups',
+    'Pull-ups',
+    'Chin-ups',
+    'Dips',
+    'Air Squats',
+    'Pistol Squats',
+    'Plank',
+    'Side Plank',
+    'Crunches',
+    'Leg Raises',
+    'Hanging Leg Raises',
+    'Burpees',
+    'Jumping Jacks',
+    'Mountain Climbers',
+
+    // Machine Exercises
+    'Leg Press',
+    'Leg Extension',
+    'Leg Curl (Hamstring Curl)',
+    'Calf Raises (Machine)',
+    'Seated Calf Raises',
+    'Lat Pulldown',
+    'Seated Cable Row',
+    'Chest Press Machine',
+    'Pec Deck (Chest Fly Machine)',
+    'Shoulder Press Machine',
+    'Cable Bicep Curl',
+    'Cable Tricep Pushdown',
+    'Abdominal Crunch Machine',
+
+    // Kettlebell Exercises
+    'Kettlebell Swing',
+    'Kettlebell Goblet Squat',
+    'Turkish Get-Up',
+    'Kettlebell Snatch',
+    'Kettlebell Clean and Press',
+
+    // Cardio
+    'Running (Treadmill)',
+    'Cycling (Stationary Bike)',
+    'Elliptical Trainer',
+    'Rowing Machine',
+    'Stair Climber',
+    'Jump Rope',
+
+    // Other/Accessory
+    'Face Pulls',
+    'Glute Bridges',
+    'Box Jumps',
+    'Farmer\'s Walk',
+    'Battle Ropes',
+    'Sled Push',
+];

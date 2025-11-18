@@ -1,0 +1,541 @@
+
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { User, Role, Notification, PreEstablishedRoutine, NotificationType, Payment, WorkoutSession, GymClass, Message, Announcement, Challenge, Achievement, EquipmentItem, IncidentReport, AICoachMessage, NutritionLog, MembershipStatus } from './types';
+import { AuthContext } from './context/AuthContext';
+import { MOCK_USERS } from './data/mockUsers';
+import { MOCK_NOTIFICATIONS } from './data/mockNotifications';
+import { MOCK_ROUTINES } from './data/mockRoutines';
+import { MOCK_PAYMENTS } from './data/mockPayments';
+import { MOCK_CLASSES } from './data/mockClasses';
+import { MOCK_MESSAGES } from './data/mockMessages';
+import { MOCK_ANNOUNCEMENTS } from './data/mockAnnouncements';
+import { MOCK_ACHIEVEMENTS } from './data/mockAchievements';
+import { MOCK_CHALLENGES } from './data/mockChallenges';
+import { MOCK_EQUIPMENT } from './data/mockEquipment';
+import { ThemeProvider } from './context/ThemeContext';
+
+import AdminDashboard from './components/AdminDashboard';
+import ClientDashboard from './components/ClientDashboard';
+import TrainerDashboard from './components/TrainerDashboard';
+import ReceptionistDashboard from './components/ReceptionistDashboard';
+import GeneralManagerDashboard from './components/GeneralManagerDashboard';
+import GroupInstructorDashboard from './components/GroupInstructorDashboard';
+import NutritionistDashboard from './components/NutritionistDashboard';
+import PhysiotherapistDashboard from './components/PhysiotherapistDashboard';
+
+import { LogoIcon } from './components/icons/LogoIcon';
+import ReportIncidentModal from './components/shared/ReportIncidentModal';
+import { WrenchIcon } from './components/icons/WrenchIcon';
+// FIX: Correctly import GoogleGenAI and Type from @google/genai.
+import { GoogleGenAI, Type } from "@google/genai";
+import { LogoutIcon } from './components/icons/LogoutIcon';
+import SplashScreen from './components/SplashScreen';
+
+function usePersistentState<T>(key: string, defaultValue: T): [T, React.Dispatch<React.SetStateAction<T>>] {
+  const [state, setState] = useState<T>(() => {
+    try {
+      const saved = window.localStorage.getItem(key);
+      if (saved !== null) {
+        return JSON.parse(saved);
+      }
+      return defaultValue;
+    } catch (error) {
+      console.error(`Error reading from localStorage for key "${key}":`, error);
+      return defaultValue;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(key, JSON.stringify(state));
+    } catch (error) {
+      console.error(`Error writing to localStorage for key "${key}":`, error);
+    }
+  }, [key, state]);
+
+  return [state, setState];
+}
+
+const LanguageSwitcher: React.FC = () => {
+    const { i18n } = useTranslation();
+
+    const changeLanguage = (lng: string) => {
+        i18n.changeLanguage(lng);
+    };
+
+    return (
+        <div className="flex items-center space-x-2">
+            <button
+                onClick={() => changeLanguage('en')}
+                className={`px-2 py-1 text-sm rounded-md flex items-center gap-1 ${i18n.language.startsWith('en') ? 'bg-primary text-primary-foreground' : 'bg-gray-200 dark:bg-gray-700'}`}
+            >
+                <span>🇺🇸</span> EN
+            </button>
+            <button
+                onClick={() => changeLanguage('es')}
+                className={`px-2 py-1 text-sm rounded-md flex items-center gap-1 ${i18n.language.startsWith('es') ? 'bg-primary text-primary-foreground' : 'bg-gray-200 dark:bg-gray-700'}`}
+            >
+                <span>🇨🇴</span> ES
+            </button>
+        </div>
+    );
+};
+
+
+const App: React.FC = () => {
+  const { t, i18n } = useTranslation();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  const [users, setUsers] = usePersistentState<User[]>('gympro_users', MOCK_USERS);
+  const [notifications, setNotifications] = usePersistentState<Notification[]>('gympro_notifications', MOCK_NOTIFICATIONS);
+  const [preEstablishedRoutines, setPreEstablishedRoutines] = usePersistentState<PreEstablishedRoutine[]>('gympro_routines', MOCK_ROUTINES);
+  const [payments, setPayments] = usePersistentState<Payment[]>('gympro_payments', MOCK_PAYMENTS);
+  const [gymClasses, setGymClasses] = usePersistentState<GymClass[]>('gympro_classes', MOCK_CLASSES);
+  const [messages, setMessages] = usePersistentState<Message[]>('gympro_messages', MOCK_MESSAGES);
+  const [announcements, setAnnouncements] = usePersistentState<Announcement[]>('gympro_announcements', MOCK_ANNOUNCEMENTS);
+  const [challenges, setChallenges] = usePersistentState<Challenge[]>('gympro_challenges', MOCK_CHALLENGES);
+  const [achievements, setAchievements] = usePersistentState<Achievement[]>('gympro_achievements', MOCK_ACHIEVEMENTS);
+  const [equipment, setEquipment] = usePersistentState<EquipmentItem[]>('gympro_equipment', MOCK_EQUIPMENT);
+  const [incidents, setIncidents] = usePersistentState<IncidentReport[]>('gympro_incidents', []);
+  
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  
+  useEffect(() => {
+    // Simula la carga de activos, la obtención de datos iniciales, etc.
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2500); // Muestra la pantalla de bienvenida durante 2.5 segundos
+
+    return () => clearTimeout(timer);
+  }, []);
+  
+  const ai = useMemo(() => new GoogleGenAI({ apiKey: process.env.API_KEY }), []);
+  const aiChatSessions = useMemo(() => new Map<string, any>(), []);
+
+  const loginAs = useCallback((role: Role) => {
+    const userToLogin = users.find(u => u.role === role);
+    if (userToLogin) {
+      setCurrentUser(userToLogin);
+    } else {
+        console.error(`Could not find a user with role: ${role}`);
+    }
+  }, [users]);
+
+  const logout = useCallback(() => {
+    setCurrentUser(null);
+  }, []);
+
+  const updateCurrentUser = useCallback((updatedUser: User) => {
+    setCurrentUser(updatedUser);
+    setUsers(prevUsers => prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u));
+  }, [setUsers]);
+
+  const updateUser = useCallback((updatedUser: User) => {
+    setUsers(prevUsers => prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u));
+    if(currentUser && currentUser.id === updatedUser.id) {
+        setCurrentUser(updatedUser);
+    }
+  }, [currentUser, setUsers]);
+
+  const addUser = useCallback((newUser: User) => {
+    setUsers(prevUsers => [...prevUsers, newUser]);
+  }, [setUsers]);
+
+  const deleteUser = useCallback((userId: string) => {
+    setUsers(prevUsers => {
+      const userToDelete = prevUsers.find(u => u.id === userId);
+      if (!userToDelete) return prevUsers;
+      let updatedUsers = prevUsers.map(user => {
+        if (user.role === Role.CLIENT && user.trainerIds?.includes(userId)) {
+          return { ...user, trainerIds: user.trainerIds.filter(id => id !== userId) };
+        }
+        return user;
+      });
+      return updatedUsers.filter(u => u.id !== userId);
+    });
+  }, [setUsers]);
+
+  const toggleBlockUser = useCallback((userIdToBlock: string) => {
+    if (!currentUser) return;
+    const currentBlockedIds = currentUser.blockedUserIds || [];
+    const isBlocked = currentBlockedIds.includes(userIdToBlock);
+    const newBlockedIds = isBlocked
+        ? currentBlockedIds.filter(id => id !== userIdToBlock)
+        : [...currentBlockedIds, userIdToBlock];
+    
+    const updatedUser = { ...currentUser, blockedUserIds: newBlockedIds };
+    updateCurrentUser(updatedUser);
+  }, [currentUser, updateCurrentUser]);
+
+  const markNotificationAsRead = useCallback((notificationId: string) => { setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)); }, [setNotifications]);
+  const markAllNotificationsAsRead = useCallback((userId: string) => { setNotifications(prev => prev.map(n => n.userId === userId ? { ...n, isRead: true } : n)); }, [setNotifications]);
+  const deleteNotification = useCallback((notificationId: string) => { setNotifications(prev => prev.filter(n => n.id !== notificationId)); }, [setNotifications]);
+  
+  const addNotification = useCallback((notification: Omit<Notification, 'id' | 'timestamp' | 'isRead'>) => {
+      const newNotification: Notification = { ...notification, id: `n${Date.now()}`, timestamp: new Date().toISOString(), isRead: false, };
+      setNotifications(prev => [newNotification, ...prev]);
+  }, [setNotifications]);
+
+  const addRoutineTemplate = useCallback((newRoutine: PreEstablishedRoutine) => { setPreEstablishedRoutines(prev => [...prev, newRoutine]); }, [setPreEstablishedRoutines]);
+  const updateRoutineTemplate = useCallback((updatedRoutine: PreEstablishedRoutine) => { setPreEstablishedRoutines(prev => prev.map(r => r.id === updatedRoutine.id ? updatedRoutine : r)); }, [setPreEstablishedRoutines]);
+  const deleteRoutineTemplate = useCallback((routineId: string) => { setPreEstablishedRoutines(prev => prev.filter(r => r.id !== routineId)); }, [setPreEstablishedRoutines]);
+
+  const logWorkout = useCallback((userId: string, session: WorkoutSession) => {
+    setUsers(prev => prev.map(u => {
+      if (u.id === userId) {
+        const history = u.workoutHistory || [];
+        return { ...u, workoutHistory: [...history, session] };
+      }
+      return u;
+    }));
+    const client = users.find(u => u.id === userId);
+    if(client && client.trainerIds) {
+      client.trainerIds.forEach(trainerId => {
+        addNotification({ userId: trainerId, title: 'Entrenamiento Registrado', message: `${client.name} acaba de registrar un entrenamiento.`, type: NotificationType.SUCCESS, });
+      });
+    }
+  }, [users, addNotification, setUsers]);
+
+  const addGymClass = useCallback((gymClass: Omit<GymClass, 'id'>) => { setGymClasses(prev => [...prev, { ...gymClass, id: `c${Date.now()}`}]); }, [setGymClasses]);
+  const updateGymClass = useCallback((updatedClass: GymClass) => { setGymClasses(prev => prev.map(c => c.id === updatedClass.id ? updatedClass : c)); }, [setGymClasses]);
+  const deleteGymClass = useCallback((classId: string) => { setGymClasses(prev => prev.filter(c => c.id !== classId)); }, [setGymClasses]);
+  const bookClass = useCallback((classId: string, userId: string): string => {
+    let message = '';
+    setGymClasses(prev => prev.map(c => {
+      if (c.id === classId) {
+        if (c.bookedClientIds.includes(userId)) { message = "Ya estás inscrito en esta clase."; return c; }
+        if (c.bookedClientIds.length >= c.capacity) { message = "Esta clase está llena."; return c; }
+        const updatedClass = { ...c, bookedClientIds: [...c.bookedClientIds, userId] };
+        addNotification({ userId: c.trainerId, title: 'Nueva Reserva de Clase', message: `${users.find(u=>u.id===userId)?.name || 'Un cliente'} ha reservado tu clase de ${c.name}.`, type: NotificationType.INFO, });
+        message = `¡Inscripción exitosa para ${c.name}!`;
+        return updatedClass;
+      }
+      return c;
+    }));
+    return message;
+  }, [addNotification, users, setGymClasses]);
+
+  const sendMessage = useCallback((message: Omit<Message, 'id' | 'timestamp' | 'isRead'>) => {
+    const newMessage: Message = { ...message, id: `m${Date.now()}`, timestamp: new Date().toISOString(), isRead: false, };
+    setMessages(prev => [...prev, newMessage]);
+    addNotification({ userId: message.receiverId, title: 'Mensaje Nuevo', message: `Tienes un nuevo mensaje de ${users.find(u=>u.id===message.senderId)?.name || 'alguien'}.`, type: NotificationType.INFO });
+  }, [addNotification, users, setMessages]);
+  
+  const markMessagesAsRead = useCallback((conversationId: string, userId: string) => {
+    setMessages(prev => prev.map(msg =>
+        (msg.conversationId === conversationId && msg.receiverId === userId && !msg.isRead)
+            ? { ...msg, isRead: true }
+            : msg
+    ));
+  }, [setMessages]);
+
+  const addAnnouncement = useCallback((announcement: Omit<Announcement, 'id' | 'timestamp'>) => { setAnnouncements(prev => [{ ...announcement, id: `a${Date.now()}`, timestamp: new Date().toISOString() }, ...prev]); }, [setAnnouncements]);
+  const updateAnnouncement = useCallback((updatedAnnouncement: Announcement) => { setAnnouncements(prev => prev.map(a => a.id === updatedAnnouncement.id ? updatedAnnouncement : a)); }, [setAnnouncements]);
+  const deleteAnnouncement = useCallback((announcementId: string) => { setAnnouncements(prev => prev.filter(a => a.id !== announcementId)); }, [setAnnouncements]);
+  
+  // AI Coach Logic
+  const sendAICoachMessage = useCallback(async (userId: string, message: AICoachMessage): Promise<AICoachMessage | null> => {
+    // Get or create chat session
+    if (!aiChatSessions.has(userId)) {
+        const chat = ai.chats.create({
+            model: 'gemini-2.5-flash',
+            config: {
+                systemInstruction: t('client.aiCoach.systemInstruction'),
+            },
+        });
+        aiChatSessions.set(userId, chat);
+    }
+    const chat = aiChatSessions.get(userId);
+    
+    // Optimistically add user's message for better UX, but we will add it again with the response for safety.
+    setUsers(prevUsers => prevUsers.map(u => {
+        if (u.id === userId) {
+            const updatedUser = { ...u, aiCoachHistory: [...(u.aiCoachHistory || []), message] };
+            if (currentUser?.id === userId) {
+                setCurrentUser(updatedUser);
+            }
+            return updatedUser;
+        }
+        return u;
+    }));
+
+    try {
+        const result = await chat.sendMessage({ message: message.text });
+        const modelResponse: AICoachMessage = {
+            role: 'model',
+            // FIX: Correctly access the 'text' property on the GenerateContentResponse.
+            text: result.text,
+            timestamp: new Date().toISOString()
+        };
+        
+        // Single atomic update for model response
+        setUsers(prevUsers => {
+            return prevUsers.map(u => {
+                if (u.id === userId) {
+                    // Replace the optimistic user message with the final history
+                    const historyWithoutOptimistic = u.aiCoachHistory?.slice(0, -1) || [];
+                    const finalHistory = [...historyWithoutOptimistic, message, modelResponse];
+                    const updatedUser = { ...u, aiCoachHistory: finalHistory };
+                    if (currentUser?.id === userId) {
+                        setCurrentUser(updatedUser);
+                    }
+                    return updatedUser;
+                }
+                return u;
+            });
+        });
+        
+        return modelResponse;
+    } catch (error) {
+        console.error("AI Coach Error:", error);
+        const errorResponse: AICoachMessage = { role: 'model', text: t('app.aiCoachError'), timestamp: new Date().toISOString() };
+        
+        // Add error response to history
+        setUsers(prevUsers => {
+            return prevUsers.map(u => {
+                if (u.id === userId) {
+                    const historyWithoutOptimistic = u.aiCoachHistory?.slice(0, -1) || [];
+                    const finalHistory = [...historyWithoutOptimistic, message, errorResponse];
+                    const updatedUser = { ...u, aiCoachHistory: finalHistory };
+                    if (currentUser?.id === userId) {
+                        setCurrentUser(updatedUser);
+                    }
+                    return updatedUser;
+                }
+                return u;
+            });
+        });
+
+        return errorResponse;
+    }
+  }, [ai, aiChatSessions, currentUser?.id, setUsers, t]);
+  
+  // Gamification Logic
+  const addChallenge = useCallback((challenge: Omit<Challenge, 'id' | 'participants'>) => {
+    setChallenges(prev => [...prev, { ...challenge, id: `chal-${Date.now()}`, participants: [] }]);
+  }, [setChallenges]);
+  const updateChallenge = useCallback((challenge: Challenge) => { setChallenges(prev => prev.map(c => c.id === challenge.id ? challenge : c)); }, [setChallenges]);
+  const deleteChallenge = useCallback((id: string) => { setChallenges(prev => prev.filter(c => c.id !== id)); }, [setChallenges]);
+  const joinChallenge = useCallback((challengeId: string, userId: string) => {
+    setChallenges(prev => prev.map(c => {
+      if (c.id === challengeId && !c.participants.some(p => p.userId === userId)) {
+        return { ...c, participants: [...c.participants, { userId, progress: 0 }] };
+      }
+      return c;
+    }));
+  }, [setChallenges]);
+  const unlockAchievement = useCallback((userId: string, achievementId: string) => {
+    setUsers(prev => prev.map(u => {
+      if (u.id === userId && !(u.achievements || []).includes(achievementId)) {
+        addNotification({ userId, title: "¡Logro Desbloqueado!", message: `¡Has ganado la insignia "${achievements.find(a=>a.id === achievementId)?.name}"!`, type: NotificationType.SUCCESS });
+        return { ...u, achievements: [...(u.achievements || []), achievementId] };
+      }
+      return u;
+    }));
+  }, [addNotification, achievements, setUsers]);
+
+  // Equipment & Incidents Logic
+  const addEquipment = useCallback((item: Omit<EquipmentItem, 'id'>) => { setEquipment(prev => [...prev, { ...item, id: `eq-${Date.now()}` }]); }, [setEquipment]);
+  const updateEquipment = useCallback((item: EquipmentItem) => { setEquipment(prev => prev.map(e => e.id === item.id ? item : e)); }, [setEquipment]);
+  const deleteEquipment = useCallback((id: string) => { setEquipment(prev => prev.filter(e => e.id !== id)); }, [setEquipment]);
+  const reportIncident = useCallback((incident: Omit<IncidentReport, 'id' | 'timestamp' | 'isResolved'>) => {
+    const newIncident = { ...incident, id: `inc-${Date.now()}`, timestamp: new Date().toISOString(), isResolved: false };
+    setIncidents(prev => [newIncident, ...prev]);
+    addNotification({ userId: '1', title: "Nuevo Reporte de Incidencia", message: `Se ha reportado un problema con el equipo ID ${incident.equipmentId}.`, type: NotificationType.ALERT });
+    setIsReportModalOpen(false);
+  }, [addNotification, setIncidents]);
+  const resolveIncident = useCallback((id: string) => { setIncidents(prev => prev.map(i => i.id === id ? { ...i, isResolved: true } : i)); }, [setIncidents]);
+
+  // Nutrition Log Logic
+  const addNutritionLog = useCallback(async (userId: string, log: Omit<NutritionLog, 'id'>) => {
+    let newLog: NutritionLog = { ...log, id: `nut-${Date.now()}` };
+
+    try {
+        const prompt = i18n.language.startsWith('es') 
+            ? `Eres un asistente de nutrición servicial. Analiza la siguiente descripción de comida y proporciona un análisis breve y alentador. Comida: "${log.mealDescription}"`
+            : `You are a helpful nutrition assistant. Analyze the following food description and provide a brief, encouraging analysis. Food: "${log.mealDescription}"`;
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        estimatedCalories: { type: Type.STRING, description: i18n.language.startsWith('es') ? "p. ej., 400-500" : "e.g., 400-500" },
+                        estimatedMacros: {
+                            type: Type.OBJECT,
+                            properties: {
+                                protein: { type: Type.STRING, description: i18n.language.startsWith('es') ? "p. ej., ~30g" : "e.g., ~30g" },
+                                carbs: { type: Type.STRING, description: i18n.language.startsWith('es') ? "p. ej., ~50g" : "e.g., ~50g" },
+                                fat: { type: Type.STRING, description: i18n.language.startsWith('es') ? "p. ej., ~15g" : "e.g., ~15g" },
+                            },
+                            required: ['protein', 'carbs', 'fat']
+                        },
+                        suggestion: { type: Type.STRING, description: i18n.language.startsWith('es') ? "Una sugerencia útil para una futura comida." : "A helpful suggestion for a future meal." },
+                    },
+                    required: ['estimatedCalories', 'estimatedMacros', 'suggestion']
+                }
+            }
+        });
+        
+        // FIX: Correctly access the 'text' property on the GenerateContentResponse.
+        const jsonText = response.text.trim();
+        const analysis = JSON.parse(jsonText);
+        newLog.aiAnalysis = analysis;
+    } catch (error) {
+        console.error("Nutrition AI Error:", error);
+        newLog.aiAnalysis = { estimatedCalories: "N/A", estimatedMacros: { protein: "N/A", carbs: "N/A", fat: "N/A" }, suggestion: t('app.nutritionLogError') };
+    }
+
+    setUsers(prevUsers => {
+        return prevUsers.map(u => {
+            if (u.id === userId) {
+                const updatedLogs = [newLog, ...(u.nutritionLogs || [])];
+                const updatedUser = { ...u, nutritionLogs: updatedLogs };
+                if (currentUser?.id === userId) {
+                    setCurrentUser(updatedUser);
+                }
+                return updatedUser;
+            }
+            return u;
+        });
+    });
+  }, [ai, currentUser?.id, setUsers, i18n.language, t]);
+
+  const myTrainers = useMemo(() => { if (currentUser?.role !== Role.CLIENT) return []; return users.filter(u => u.role === Role.TRAINER && currentUser.trainerIds?.includes(u.id)); }, [currentUser, users]);
+  const myClients = useMemo(() => { if (currentUser?.role !== Role.TRAINER) return []; return users.filter(u => u.role === Role.CLIENT && u.trainerIds?.includes(currentUser.id)); }, [currentUser, users]);
+
+  const authContextValue = useMemo(() => ({
+    currentUser, users, myClients, myTrainers, notifications, preEstablishedRoutines, payments, gymClasses, messages, announcements, challenges, achievements, equipment, incidents,
+    logout, updateCurrentUser, updateUser, addUser, deleteUser, toggleBlockUser, markNotificationAsRead, markAllNotificationsAsRead, deleteNotification, addNotification, addRoutineTemplate, updateRoutineTemplate, deleteRoutineTemplate, logWorkout, addGymClass, updateGymClass, deleteGymClass, bookClass, sendMessage, markMessagesAsRead, addAnnouncement, updateAnnouncement, deleteAnnouncement,
+    sendAICoachMessage, addChallenge, updateChallenge, deleteChallenge, joinChallenge, unlockAchievement, addEquipment, updateEquipment, deleteEquipment, reportIncident, resolveIncident, addNutritionLog,
+    // FIX: Add dummy implementations for login and register to satisfy AuthContextType for the unused LoginScreen component.
+    login: async () => { console.warn('login not implemented')},
+    register: async () => { console.warn('register not implemented')},
+  }), [
+      currentUser, users, myClients, myTrainers, notifications, preEstablishedRoutines, payments, gymClasses, messages, announcements, challenges, achievements, equipment, incidents,
+      logout, updateCurrentUser, updateUser, addUser, deleteUser, toggleBlockUser, markNotificationAsRead, markAllNotificationsAsRead, deleteNotification, addNotification, addRoutineTemplate, updateRoutineTemplate, deleteRoutineTemplate, logWorkout, addGymClass, updateGymClass, deleteGymClass, bookClass, sendMessage, markMessagesAsRead, addAnnouncement, updateAnnouncement, deleteAnnouncement,
+      sendAICoachMessage, addChallenge, updateChallenge, deleteChallenge, joinChallenge, unlockAchievement, addEquipment, updateEquipment, deleteEquipment, reportIncident, resolveIncident, addNutritionLog
+  ]);
+  
+  const renderContent = () => {
+    if (!currentUser) {
+      return (
+        <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800">
+          <div className="w-full max-w-md p-8 space-y-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm rounded-2xl shadow-2xl ring-1 ring-black/10 dark:ring-white/10">
+            <div className="absolute top-4 right-4">
+              <LanguageSwitcher />
+            </div>
+            <div className="text-center">
+              <LogoIcon className="w-16 h-16 mx-auto mb-4" />
+              <h1 className="text-4xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500 dark:from-blue-400 dark:to-teal-300">
+                {t('general.appName')}
+              </h1>
+              <p className="mt-2 text-gray-600 dark:text-gray-400">
+                {t('login.subtitle')}
+              </p>
+            </div>
+            <div className="space-y-4">
+              <button onClick={() => loginAs(Role.ADMIN)} className="w-full flex justify-center px-4 py-3 text-lg font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition duration-300 ease-in-out transform hover:-translate-y-1">
+                {t('login.loginAs', { role: t('roles.ADMIN') })}
+              </button>
+              <button onClick={() => loginAs(Role.CLIENT)} className="w-full flex justify-center px-4 py-3 text-lg font-semibold text-white bg-teal-600 rounded-lg shadow-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-opacity-75 transition duration-300 ease-in-out transform hover:-translate-y-1">
+                {t('login.loginAs', { role: t('roles.CLIENT') })}
+              </button>
+              <button onClick={() => loginAs(Role.TRAINER)} className="w-full flex justify-center px-4 py-3 text-lg font-semibold text-white bg-purple-600 rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-75 transition duration-300 ease-in-out transform hover:-translate-y-1">
+                {t('login.loginAs', { role: t('roles.TRAINER') })}
+              </button>
+            </div>
+            <div className="mt-6 pt-4 border-t border-gray-300 dark:border-gray-600">
+                <h3 className="text-center text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">{t('login.staffOperational')}</h3>
+                <div className="grid grid-cols-2 gap-2">
+                    <button onClick={() => loginAs(Role.RECEPTIONIST)} className="px-3 py-2 text-sm font-semibold text-white bg-gray-500 rounded-lg shadow hover:bg-gray-600 transition">{t('roles.RECEPTIONIST')}</button>
+                    <button onClick={() => loginAs(Role.GENERAL_MANAGER)} className="px-3 py-2 text-sm font-semibold text-white bg-gray-500 rounded-lg shadow hover:bg-gray-600 transition">{t('roles.GENERAL_MANAGER')}</button>
+                    <button onClick={() => loginAs(Role.GROUP_INSTRUCTOR)} className="col-span-2 px-3 py-2 text-sm font-semibold text-white bg-gray-500 rounded-lg shadow hover:bg-gray-600 transition">{t('roles.GROUP_INSTRUCTOR')}</button>
+                </div>
+            </div>
+            <div className="mt-4">
+                <h3 className="text-center text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">{t('login.staffHealth')}</h3>
+                <div className="grid grid-cols-2 gap-2">
+                    <button onClick={() => loginAs(Role.NUTRITIONIST)} className="px-3 py-2 text-sm font-semibold text-white bg-gray-500 rounded-lg shadow hover:bg-gray-600 transition">{t('roles.NUTRITIONIST')}</button>
+                    <button onClick={() => loginAs(Role.PHYSIOTHERAPIST)} className="px-3 py-2 text-sm font-semibold text-white bg-gray-500 rounded-lg shadow hover:bg-gray-600 transition">{t('roles.PHYSIOTHERAPIST')}</button>
+                </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // FIX: Replaced JSX.Element with React.ReactElement to resolve "Cannot find namespace 'JSX'" error.
+    const dashboards: { [key in Role]?: React.ReactElement } = {
+        [Role.ADMIN]: <AdminDashboard />,
+        [Role.CLIENT]: <ClientDashboard />,
+        [Role.TRAINER]: <TrainerDashboard />,
+        [Role.RECEPTIONIST]: <ReceptionistDashboard />,
+        [Role.GENERAL_MANAGER]: <GeneralManagerDashboard />,
+        [Role.GROUP_INSTRUCTOR]: <GroupInstructorDashboard />,
+        [Role.NUTRITIONIST]: <NutritionistDashboard />,
+        [Role.PHYSIOTHERAPIST]: <PhysiotherapistDashboard />,
+    };
+
+    const dashboard = dashboards[currentUser.role];
+    
+    if (!dashboard) {
+        // Placeholder for any other roles not yet implemented
+        return (
+            <div className="flex flex-col min-h-screen">
+                <header className="p-4 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm flex justify-between items-center border-b border-black/10 dark:border-white/10">
+                    <div className="flex items-center space-x-3">
+                        <LogoIcon className="w-8 h-8"/>
+                        <h1 className="text-xl font-bold text-gray-800 dark:text-gray-200 capitalize">{t(`roles.${currentUser.role}`)} Dashboard</h1>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                         <LanguageSwitcher />
+                         <span className="text-gray-700 dark:text-gray-300 hidden sm:inline">{t('general.welcome', { name: currentUser.name })}</span>
+                         <img src={currentUser.avatarUrl} alt="Profile" className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700"/>
+                        <button onClick={logout} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" aria-label={t('placeholders.logout')}>
+                            <LogoutIcon className="w-6 h-6 text-gray-600 dark:text-gray-400"/>
+                        </button>
+                    </div>
+                </header>
+                <main className="flex-1 flex items-center justify-center p-4">
+                    <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md max-w-lg">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{t('placeholders.dashboardComingSoon')}</h2>
+                        <p className="mt-2 text-gray-600 dark:text-gray-400">{t('placeholders.dashboardInConstruction', { role: t(`roles.${currentUser.role}`).toLowerCase() })}</p>
+                    </div>
+                </main>
+            </div>
+        )
+    }
+    
+    return (
+      <>
+        {dashboard}
+        <button
+            onClick={() => setIsReportModalOpen(true)}
+            className="fixed bottom-6 right-6 bg-red-600 hover:bg-red-700 text-white rounded-full p-4 shadow-lg transition-transform transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75 z-50"
+            aria-label={t('app.reportProblem')}
+        >
+            <WrenchIcon className="w-6 h-6" />
+        </button>
+        {isReportModalOpen && currentUser && <ReportIncidentModal reportedById={currentUser.id} onClose={() => setIsReportModalOpen(false)} />}
+      </>
+    );
+  };
+
+  return (
+    <ThemeProvider>
+      <AuthContext.Provider value={authContextValue}>
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-sans transition-colors duration-300">
+          {isLoading ? <SplashScreen /> : renderContent()}
+        </div>
+      </AuthContext.Provider>
+    </ThemeProvider>
+  );
+};
+
+export default App;

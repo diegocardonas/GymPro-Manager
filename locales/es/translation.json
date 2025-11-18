@@ -1,0 +1,367 @@
+
+{
+    "general": {
+        "appName": "GymPro Manager",
+        "loading": "Cargando...",
+        "save": "Guardar",
+        "saveChanges": "Guardar Cambios",
+        "cancel": "Cancelar",
+        "close": "Cerrar",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "add": "Añadir",
+        "submit": "Enviar",
+        "actions": "Acciones",
+        "name": "Nombre",
+        "email": "Email",
+        "phone": "Teléfono",
+        "role": "Rol",
+        "status": "Estado",
+        "description": "Descripción",
+        "date": "Fecha",
+        "user": "Usuario",
+        "notes": "Notas",
+        "welcome": "Bienvenido, {{name}}",
+        "success": "Éxito",
+        "error": "Error",
+        "warning": "Advertencia",
+        "info": "Información",
+        "confirmDelete": "¿Estás seguro de que quieres eliminar esto? Esta acción no se puede deshacer.",
+        "unassigned": "Sin asignar"
+    },
+    "roles": {
+        "ADMIN": "Administrador",
+        "CLIENT": "Cliente",
+        "TRAINER": "Entrenador",
+        "RECEPTIONIST": "Recepcionista",
+        "GENERAL_MANAGER": "Gerente General",
+        "GROUP_INSTRUCTOR": "Instructor de Grupo",
+        "NUTRITIONIST": "Nutricionista",
+        "PHYSIOTHERAPIST": "Fisioterapeuta"
+    },
+    "genders": {
+        "Masculino": "Masculino",
+        "Femenino": "Femenino",
+        "Otro": "Otro",
+        "Prefiero no decirlo": "Prefiero no decirlo"
+    },
+    "statuses": {
+        "membership": {
+            "Activo": "Activo",
+            "Vencido": "Vencido",
+            "Pendiente": "Pendiente"
+        },
+        "payment": {
+            "Completado": "Completado",
+            "Pendiente": "Pendiente",
+            "Fallido": "Fallido"
+        },
+        "equipment": {
+            "Operativo": "Operativo",
+            "En Reparación": "En Reparación",
+            "Fuera de Servicio": "Fuera de Servicio"
+        }
+    },
+    "fitnessLevels": {
+        "Principiante": "Principiante",
+        "Intermedio": "Intermedio",
+        "Avanzado": "Avanzado"
+    },
+    "splash": {
+        "tagline": "Forjando tu mejor versión."
+    },
+    "login": {
+        "subtitle": "Selecciona un rol para iniciar sesión a modo de prueba.",
+        "loginAs": "Iniciar sesión como {{role}}",
+        "staffOperational": "Personal Operativo y de Servicio",
+        "staffHealth": "Personal Especializado en Salud y Bienestar"
+    },
+    "placeholders": {
+        "dashboardComingSoon": "¡El panel de control llegará pronto!",
+        "dashboardInConstruction": "El panel de control para el rol '{{role}}' está actualmente en construcción. Por favor, vuelve más tarde.",
+        "logout": "Cerrar Sesión"
+    },
+    "app": {
+        "reportProblem": "Reportar un problema",
+        "aiCoachError": "Lo siento, tengo problemas para conectarme en este momento. Por favor, inténtalo de nuevo más tarde.",
+        "nutritionLogError": "No se pudo analizar la comida en este momento."
+    },
+    "components": {
+        "languageSwitcher": {
+            "language": "Idioma",
+            "english": "Inglés",
+            "spanish": "Español"
+        },
+        "notificationBell": {
+            "notifications": "Notificaciones",
+            "markAllAsRead": "Marcar todo como leído",
+            "noNotifications": "No hay notificaciones aún.",
+            "viewAll": "Ver Todas las Notificaciones"
+        },
+        "notificationsView": {
+            "title": "Notificaciones",
+            "all": "Todas",
+            "unread": "No leídas",
+            "noNotificationsHere": "No tienes notificaciones {{filter}}."
+        },
+        "settingsView": {
+            "title": "Ajustes",
+            "appearance": "Apariencia",
+            "darkMode": "Modo Oscuro",
+            "darkModeDesc": "Alterna entre los temas claro y oscuro.",
+            "theme": "Tema",
+            "accountSecurity": "Seguridad de la Cuenta",
+            "passwordSuccess": "¡Contraseña actualizada correctamente!",
+            "passwordErrorCurrent": "La contraseña actual es incorrecta.",
+            "passwordErrorMatch": "Las nuevas contraseñas no coinciden.",
+            "passwordErrorLength": "La nueva contraseña debe tener al menos 8 caracteres.",
+            "currentPassword": "Contraseña Actual",
+            "newPassword": "Nueva Contraseña",
+            "confirmNewPassword": "Confirmar Nueva Contraseña",
+            "changePassword": "Cambiar Contraseña",
+            "privacyNotifications": "Privacidad y Notificaciones",
+            "privacySettings": "Ajustes de Privacidad",
+            "profileVisibility": "Visibilidad del Perfil",
+            "profileVisibilityDesc": "Controla quién puede ver tu perfil.",
+            "activityVisibility": "Visibilidad de la Actividad",
+            "activityVisibilityDesc": "Controla quién puede ver tu actividad de entrenamiento.",
+            "showInSearch": "Aparecer en Búsquedas",
+            "showInSearchDesc": "Permite que otros usuarios te encuentren al buscar.",
+            "privacyOptions": {
+                "everyone": "Todos",
+                "connections": "Conexiones",
+                "me": "Solo yo"
+            },
+            "notificationPreferences": "Preferencias de Notificación",
+            "newMessages": "Nuevos Mensajes",
+            "newMessagesDesc": "Recibir notificaciones de nuevos mensajes directos.",
+            "routineUpdates": "Actualizaciones de Rutina",
+            "routineUpdatesDesc": "Recibir avisos cuando un entrenador actualice tu rutina.",
+            "classReminders": "Recordatorios de Clase",
+            "classRemindersDesc": "Recibir recordatorios de las clases que has reservado.",
+            "blockedUsers": "Usuarios Bloqueados",
+            "noBlockedUsers": "No tienes ningún usuario bloqueado.",
+            "unblock": "Desbloquear",
+            "dangerZone": "Zona de Peligro",
+            "deactivateAccount": "Desactivar Cuenta",
+            "deactivateAccountDesc": "Esta acción es permanente y no se puede deshacer.",
+            "deactivate": "Desactivar",
+            "confirmDeactivation": "¿Estás seguro de que quieres desactivar tu cuenta? Esta acción es permanente y no se puede deshacer."
+        },
+        "reportIncidentModal": {
+            "title": "Reportar Problema de Equipo",
+            "equipment": "Equipo",
+            "selectEquipment": "Selecciona un artículo...",
+            "describeProblem": "Describe el Problema",
+            "descriptionPlaceholder": "p. ej., La pantalla no enciende, o hay un ruido fuerte del motor.",
+            "submitReport": "Enviar Reporte",
+            "alert": "Por favor, selecciona un equipo y describe el problema."
+        },
+        "shareRoutineModal": {
+            "title": "Compartir Rutina Con...",
+            "searchUser": "Buscar un usuario...",
+            "send": "Enviar",
+            "successMessage_one": "¡Rutina enviada a {{count}} usuario!",
+            "successMessage_other": "¡Rutina enviada a {{count}} usuarios!"
+        },
+        "messagingView": {
+            "title": "Chat de la Comunidad",
+            "search": "Buscar usuarios...",
+            "showActiveChats": "Mostrar solo chats activos",
+            "noActiveChats": "No se encontraron chats activos.",
+            "startMessaging": "Selecciona un contacto para empezar a chatear.",
+            "messagePlaceholder": "Mensaje para {{name}}...",
+            "block": "Bloquear",
+            "unblock": "Desbloquear",
+            "confirmBlock": "¿Estás seguro de que quieres bloquear a {{name}}?",
+            "confirmUnblock": "¿Estás seguro de que quieres desbloquear a {{name}}?",
+            "filterByRole": "Filtrar por Rol",
+            "apply": "Aplicar",
+            "clear": "Limpiar",
+            "today": "HOY",
+            "yesterday": "AYER",
+            "myTrainers": "Mis Entrenadores",
+            "myClients": "Mis Clientes",
+            "staff": "Personal",
+            "clients": "Clientes"
+        }
+    },
+    "admin": {
+        "sidebar": {
+            "dashboard": "Panel de Control",
+            "userManagement": "Gestión de Usuarios",
+            "finances": "Finanzas",
+            "reports": "Reportes",
+            "classSchedule": "Horario de Clases",
+            "announcements": "Anuncios",
+            "challenges": "Desafíos",
+            "equipment": "Equipos",
+            "membershipTiers": "Niveles de Membresía",
+            "routineTemplates": "Plantillas de Rutinas",
+            "notifications": "Notificaciones",
+            "appSettings": "Ajustes de App",
+            "mySettings": "Mis Ajustes"
+        },
+        "dashboard": {
+            "title": "Panel de Control",
+            "userManagement": "Gestión de Usuarios",
+            "reports": "Reportes",
+            "finances": "Finanzas",
+            "classSchedule": "Horario de Clases",
+            "announcements": "Anuncios",
+            "challenges": "Desafíos del Gimnasio",
+            "equipment": "Gestión de Equipos",
+            "membershipTiers": "Niveles de Membresía",
+            "routineTemplates": "Plantillas de Rutinas",
+            "appSettings": "Ajustes de la Aplicación",
+            "notifications": "Notificaciones",
+            "settings": "Mis Ajustes",
+            "welcome": "Bienvenido, {{name}}"
+        },
+        "overview": {
+            "totalMembers": "Total de Miembros",
+            "activeMembers": "Miembros Activos",
+            "totalTrainers": "Total de Entrenadores",
+            "pendingPayments": "Pagos Pendientes",
+            "unassignedClients": "Clientes sin Asignar",
+            "newMemberGrowth": "Crecimiento de Nuevos Miembros",
+            "newMembers": "Nuevos Miembros",
+            "membershipStatus": "Estado de las membresías",
+            "recentActivity": "Actividad Reciente",
+            "joinedAs": "se unió como {{role}}.",
+            "quickActions": "Acciones Rápidas",
+            "addNewUser": "Añadir Nuevo Usuario",
+            "viewReports": "Ver Reportes",
+            "appSettings": "Ajustes de la Aplicación"
+        },
+        "userManagement": {
+            "clients": "Clientes",
+            "trainers": "Entrenadores",
+            "staffOperational": "Personal Operativo",
+            "staffHealth": "Personal de Salud",
+            "exportCsv": "Exportar CSV",
+            "addUser": "Añadir {{type}}",
+            "searchPlaceholder": "Buscar por nombre o email...",
+            "allStatuses": "Todos los Estados",
+            "allTrainers": "Todos los Entrenadores",
+            "unassigned": "Sin Asignar",
+            "usersSelected_one": "{{count}} usuario seleccionado",
+            "usersSelected_other": "{{count}} usuarios seleccionados",
+            "deleteSelected": "Eliminar Seleccionados",
+            "confirmDeleteSelected_one": "¿Estás seguro de que quieres eliminar a {{count}} usuario?",
+            "confirmDeleteSelected_other": "¿Estás seguro de que quieres eliminar a {{count}} usuarios?",
+            "showingUsers": "Mostrando {{start}}-{{end}} de {{total}} usuarios",
+            "page": "Página {{current}} de {{total}}",
+            "previous": "Anterior",
+            "next": "Siguiente",
+            "confirmDelete": "¿Estás seguro de que quieres eliminar este usuario?",
+            "headers": {
+                "user": "Usuario",
+                "status": "Estado",
+                "trainers": "Entrenadores",
+                "joinDate": "Fecha de Ingreso",
+                "expiryDate": "Fecha de Vencimiento",
+                "actions": "Acciones",
+                "role": "Rol",
+                "phone": "Teléfono"
+            },
+            "addUserModalTitle": "Añadir Usuario",
+            "editUserModalTitle": "Editar Usuario",
+            "modalTabs": {
+                "info": "Información",
+                "membership": "Membresía",
+                "health": "Salud",
+                "professional": "Profesional",
+                "emergency": "Emergencia"
+            },
+            "selectPlaceholder": "Seleccionar...",
+            "emailCannotBeChanged": "El email no se puede cambiar.",
+            "emergencyContact": "Contacto de Emergencia",
+            "contactName": "Nombre del Contacto",
+            "contactPhone": "Teléfono del Contacto"
+        },
+        "userDetailsModal": {
+            "keyInfo": "Información Clave",
+            "personalInfo": "Información Personal",
+            "healthFitness": "Salud y Fitness",
+            "professionalInfo": "Información Profesional",
+            "emergencyContact": "Contacto de Emergencia",
+            "status": "Estado",
+            "tier": "Nivel",
+            "memberSince": "Miembro desde",
+            "expiresOn": "Vence el",
+            "clientLoad": "Carga de clientes",
+            "clientsCount": "{{count}} clientes",
+            "assignedTrainers": "Entrenadores asignados",
+            "none": "Ninguno",
+            "phone": "Teléfono",
+            "gender": "Género",
+            "age": "Edad",
+            "ageYears": "{{age}} años",
+            "fitnessLevel": "Nivel Físico",
+            "height": "Altura",
+            "heightCm": "{{height}} cm",
+            "weight": "Peso",
+            "weightKg": "{{weight}} kg",
+            "fitnessGoals": "Metas de fitness",
+            "dietaryPreferences": "Preferencias alimentarias",
+            "medicalConditions": "Condiciones médicas",
+            "skills": "Habilidades",
+            "name": "Nombre",
+            "close": "Cerrar",
+            "editUser": "Editar Usuario",
+            "notApplicable": "N/A"
+        },
+        "editProfileModal": {
+            "title": "Editar Perfil",
+            "uploadPhoto": "Subir foto",
+            "randomAvatar": "Avatar aleatorio",
+            "personalInfo": "Información Personal",
+            "emergencyContact": "Contacto de Emergencia",
+            "selectGender": "Seleccionar...",
+            "age": "Edad",
+            "contactName": "Nombre del Contacto",
+            "contactPhone": "Teléfono del Contacto"
+        }
+    },
+    "receptionist": {
+        "checkIn": "Check-In de Miembros",
+        "searchMember": "Buscar miembro...",
+        "checkInSuccess": "¡Check-In exitoso para {{name}}!",
+        "checkInButton": "Check In",
+        "classSchedule": "Horario de Clases",
+        "upcomingClasses": "Próximas Clases",
+        "recentCheckIns": "Check-Ins Recientes",
+        "memberStatus": "Estado del Miembro",
+        "checkedIn": "Check-In Realizado"
+    },
+    "manager": {
+        "overview": "Visión General",
+        "staff": "Gestión de Personal",
+        "revenue": "Ingresos",
+        "mrr": "IMR",
+        "activeMembers": "Miembros Activos",
+        "unpaidDues": "Cuotas Pendientes",
+        "keyMetrics": "Métricas Clave"
+    },
+    "instructor": {
+        "myClasses": "Mis Clases",
+        "attendees": "Asistentes",
+        "capacity": "Capacidad"
+    },
+    "nutritionist": {
+        "clients": "Clientes",
+        "nutritionLogs": "Registros Nutricionales",
+        "selectClient": "Selecciona un cliente para ver registros",
+        "lastLog": "Último Registro",
+        "aiAnalysis": "Análisis IA"
+    },
+    "physio": {
+        "patients": "Pacientes",
+        "progressNotes": "Notas de Progreso",
+        "selectPatient": "Selecciona un paciente para ver notas",
+        "addNote": "Añadir Nota",
+        "injuryStatus": "Estado de Lesión",
+        "treatmentPlan": "Plan de Tratamiento"
+    }
+}

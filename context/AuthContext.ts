@@ -72,6 +72,9 @@ interface AuthContextType {
   
   addNutritionLog: (userId: string, log: Omit<NutritionLog, 'id'>) => Promise<void>;
   
+  // POS
+  addPayment: (payment: Omit<Payment, 'id'>) => void;
+  
   login: (email: string, password: string) => Promise<string | void>;
   register: (user: any) => Promise<string | void>;
 }
@@ -144,6 +147,8 @@ export const AuthContext = createContext<AuthContextType>({
   toggleReportModal: () => {},
   
   addNutritionLog: async () => {},
+  
+  addPayment: () => {},
 
   login: async () => {},
   register: async () => {},

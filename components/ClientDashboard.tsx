@@ -25,6 +25,8 @@ import ShareRoutineModal from './shared/ShareRoutineModal';
 import Footer from './Footer';
 import { useTranslation } from 'react-i18next';
 import { UserProfileMenu } from './shared/UserProfileMenu';
+import { BottomNavigation } from './shared/BottomNavigation';
+import { LogoIcon } from './icons/LogoIcon';
 
 type View = 'dashboard' | 'routine' | 'workout-log' | 'progress' | 'classes' | 'messages' | 'membership-card' | 'profile' | 'notifications' | 'settings' | 'ai-coach' | 'challenges' | 'achievements' | 'nutrition-log';
 
@@ -406,50 +408,59 @@ const ClientDashboard: React.FC = () => {
   return (
     <>
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex">
-        <ClientSidebar 
-            activeView={activeView} 
-            setActiveView={setActiveView} 
-            isOpen={isSidebarOpen}
-            onClose={() => setIsSidebarOpen(false)}
-            isCollapsed={isSidebarCollapsed}
-            toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        />
-        
-        {/* Mobile Overlay */}
-        {isSidebarOpen && <div onClick={() => setIsSidebarOpen(false)} className="fixed inset-0 bg-black/60 z-20 md:hidden" aria-hidden="true" />}
+            <div className="hidden md:block h-full">
+                <ClientSidebar 
+                    activeView={activeView} 
+                    setActiveView={setActiveView} 
+                    isOpen={isSidebarOpen}
+                    onClose={() => setIsSidebarOpen(false)}
+                    isCollapsed={isSidebarCollapsed}
+                    toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                />
+            </div>
+            
+            {/* Mobile Overlay */}
+            {isSidebarOpen && <div onClick={() => setIsSidebarOpen(false)} className="fixed inset-0 bg-black/60 z-20 md:hidden" aria-hidden="true" />}
 
-        {/* Main Content - Adjusts margin based on sidebar state */}
-        <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
-            <header className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm sticky top-0 z-10 p-4 flex justify-between items-center border-b border-black/10 dark:border-white/10">
-                <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors md:hidden" aria-label="Toggle sidebar">
-                    <MenuIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-                </button>
-                <div className="flex items-center space-x-4 ml-auto">
-                    <button onClick={() => setActiveView('messages')} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" aria-label={t('client.sidebar.messages')}>
-                        <ChatBubbleLeftRightIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-                    </button>
-                    <NotificationBell 
-                        onViewAll={() => setActiveView('notifications')}
-                        onNotificationClick={(view) => setActiveView(view as View)}
-                    />
-                    {currentUser && (
-                        <UserProfileMenu 
-                            user={currentUser}
-                            onEditProfile={() => setIsEditModalOpen(true)}
-                            onSettings={() => setActiveView('settings')}
-                            onLogout={logout}
+            {/* Main Content - Adjusts margin based on sidebar state */}
+            <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out md:${isSidebarCollapsed ? 'ml-20' : 'ml-64'} pb-16 md:pb-0`}>
+                <header className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm sticky top-0 z-30 p-4 flex justify-between items-center border-b border-black/10 dark:border-white/10">
+                    <div className="flex items-center gap-2 md:hidden">
+                        <LogoIcon className="w-8 h-8" />
+                        <span className="font-bold text-primary">GymPro</span>
+                    </div>
+                    
+                    <div className="flex items-center space-x-4 ml-auto">
+                        <button onClick={() => setActiveView('messages')} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors hidden md:block" aria-label={t('client.sidebar.messages')}>
+                            <ChatBubbleLeftRightIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+                        </button>
+                        <NotificationBell 
+                            onViewAll={() => setActiveView('notifications')}
+                            onNotificationClick={(view) => setActiveView(view as View)}
                         />
-                    )}
+                        {currentUser && (
+                            <UserProfileMenu 
+                                user={currentUser}
+                                onEditProfile={() => setIsEditModalOpen(true)}
+                                onSettings={() => setActiveView('settings')}
+                                onLogout={logout}
+                            />
+                        )}
+                    </div>
+                </header>
+                <main className="flex-grow flex items-center justify-center p-4 md:p-8">
+                    <div key={activeView} className="animate-fade-in w-full">
+                        {renderContent()}
+                    </div>
+                </main>
+                <div className="hidden md:block">
+                   <Footer />
                 </div>
-            </header>
-            <main className="flex-grow flex items-center justify-center p-4 md:p-8">
-                <div key={activeView} className="animate-fade-in w-full">
-                    {renderContent()}
-                </div>
-            </main>
-            <Footer />
-        </div>
-        {isEditModalOpen && <EditProfileModal user={currentUser} onSave={handleProfileSave} onClose={() => setIsEditModalOpen(false)} />}
+            </div>
+            
+            <BottomNavigation activeView={activeView} onNavigate={setActiveView} />
+            
+            {isEditModalOpen && <EditProfileModal user={currentUser} onSave={handleProfileSave} onClose={() => setIsEditModalOpen(false)} />}
         </div>
         {shareModalRoutine && (
             <ShareRoutineModal

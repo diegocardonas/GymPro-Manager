@@ -28,9 +28,10 @@ import { PencilIcon } from './icons/PencilIcon';
 import LanguageSwitcher from './LanguageSwitcher';
 import Footer from './Footer';
 import { UserProfileMenu } from './shared/UserProfileMenu';
+import { PointOfSale } from './admin/PointOfSale';
 
 
-type View = 'dashboard' | 'users' | 'reports' | 'membership-tiers' | 'routine-templates' | 'app-settings' | 'settings' | 'notifications' | 'payments' | 'class-schedule' | 'announcements' | 'challenges' | 'equipment';
+type View = 'dashboard' | 'users' | 'reports' | 'membership-tiers' | 'routine-templates' | 'app-settings' | 'settings' | 'notifications' | 'payments' | 'class-schedule' | 'announcements' | 'challenges' | 'equipment' | 'pos';
 export type DashboardFilter = { type: 'status', value: MembershipStatus } | { type: 'role', value: Role.CLIENT | Role.TRAINER } | { type: 'unassigned' } | null;
 
 const AdminDashboard: React.FC = () => {
@@ -66,6 +67,8 @@ const AdminDashboard: React.FC = () => {
                 return <Reports />;
             case 'payments':
                 return <Payments />;
+            case 'pos':
+                return <PointOfSale />;
             case 'class-schedule':
                 return <ClassSchedule />;
             case 'announcements':
@@ -94,6 +97,7 @@ const AdminDashboard: React.FC = () => {
         users: t('admin.dashboard.userManagement'),
         reports: t('admin.dashboard.reports'),
         payments: t('admin.dashboard.finances'),
+        pos: t('receptionist.nav.pos'),
         'class-schedule': t('admin.dashboard.classSchedule'),
         announcements: t('admin.dashboard.announcements'),
         challenges: t('admin.dashboard.challenges'),

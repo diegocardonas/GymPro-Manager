@@ -72,7 +72,8 @@
         "incidentResolved": "Incidencia marcada como resuelta",
         "mealAnalyzed": "¡Comida analizada con éxito!",
         "mealAnalysisFailed": "No se pudo analizar la comida. Añadida al registro.",
-        "aiCoachUnavailable": "El Entrenador IA no está disponible actualmente."
+        "aiCoachUnavailable": "El Entrenador IA no está disponible actualmente.",
+        "paymentSuccess": "Pago registrado con éxito"
     },
     "notifications": {
         "workoutLoggedTitle": "Entrenamiento Registrado",
@@ -230,6 +231,11 @@
         },
         "aiCoach": {
             "systemInstruction": "Eres un experto entrenador personal y nutricionista IA para GymPro. Sé alentador, conciso y servicial. Responde preguntas sobre entrenamientos, dieta y equipamiento de gimnasio."
+        },
+        "membershipCard": {
+            "dynamicAccessCode": "CÓDIGO DE ACCESO DINÁMICO",
+            "refreshNote": "Actualiza en {{seconds}}s",
+            "download": "Descargar Tarjeta"
         }
     },
     "trainer": {
@@ -557,7 +563,8 @@
         "nav": {
             "checkIn": "Check-In",
             "members": "Miembros",
-            "classes": "Clases"
+            "classes": "Clases",
+            "pos": "Punto de Venta"
         }
     },
     "manager": {
@@ -619,5 +626,16 @@
             "patients": "Pacientes",
             "notes": "Notas"
         }
+    },
+    "pos": {
+        "products": "Productos",
+        "currentSale": "Venta Actual",
+        "searchClient": "Buscar Cliente (opcional)",
+        "emptyCart": "El carrito está vacío.",
+        "total": "Total",
+        "checkout": "Cobrar",
+        "selectUserAlert": "Por favor, selecciona un cliente.",
+        "saleSuccess": "¡Venta Exitosa!",
+        "totalCharged": "Total cobrado"
     }
 }

@@ -72,7 +72,8 @@
         "incidentResolved": "Incident marked as resolved",
         "mealAnalyzed": "Meal analyzed successfully!",
         "mealAnalysisFailed": "Could not analyze meal. Added to log.",
-        "aiCoachUnavailable": "AI Coach is currently unavailable."
+        "aiCoachUnavailable": "AI Coach is currently unavailable.",
+        "paymentSuccess": "Payment recorded successfully"
     },
     "notifications": {
         "workoutLoggedTitle": "Workout Logged",
@@ -230,6 +231,11 @@
         },
         "aiCoach": {
             "systemInstruction": "You are an expert fitness coach and nutritionist AI for GymPro. Be encouraging, concise, and helpful. Answer questions about workouts, diet, and gym equipment."
+        },
+        "membershipCard": {
+            "dynamicAccessCode": "DYNAMIC ACCESS CODE",
+            "refreshNote": "Refreshes in {{seconds}}s",
+            "download": "Download Card"
         }
     },
     "trainer": {
@@ -557,7 +563,8 @@
         "nav": {
             "checkIn": "Check-In",
             "members": "Members",
-            "classes": "Classes"
+            "classes": "Classes",
+            "pos": "Point of Sale"
         }
     },
     "manager": {
@@ -619,5 +626,16 @@
             "patients": "Patients",
             "notes": "Notes"
         }
+    },
+    "pos": {
+        "products": "Products",
+        "currentSale": "Current Sale",
+        "searchClient": "Search Client (optional)",
+        "emptyCart": "Cart is empty.",
+        "total": "Total",
+        "checkout": "Checkout",
+        "selectUserAlert": "Please select a user to checkout.",
+        "saleSuccess": "Sale Successful!",
+        "totalCharged": "Total charged"
     }
 }

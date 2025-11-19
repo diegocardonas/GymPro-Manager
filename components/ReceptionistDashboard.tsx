@@ -16,11 +16,13 @@ import { IdentificationIcon } from './icons/IdentificationIcon';
 import { CheckCircleIcon } from './icons/CheckCircleIcon';
 import { XCircleIcon } from './icons/XCircleIcon';
 import { ExclamationTriangleIcon } from './icons/ExclamationTriangleIcon';
+import { CurrencyDollarIcon } from './icons/CurrencyDollarIcon';
 import Footer from './Footer';
 import { UserProfileMenu } from './shared/UserProfileMenu';
 import SettingsView from './SettingsView';
+import { PointOfSale } from './admin/PointOfSale';
 
-type View = 'check-in' | 'users' | 'classes' | 'notifications' | 'settings';
+type View = 'check-in' | 'users' | 'classes' | 'pos' | 'notifications' | 'settings';
 
 const ReceptionistDashboard: React.FC = () => {
     const { t } = useTranslation();
@@ -190,6 +192,8 @@ const ReceptionistDashboard: React.FC = () => {
                         </div>
                     </div>
                 );
+            case 'pos':
+                return <PointOfSale />;
              case 'notifications':
                 return <NotificationsView />;
              case 'settings':
@@ -220,6 +224,10 @@ const ReceptionistDashboard: React.FC = () => {
                         <CalendarDaysIcon className="w-6 h-6" />
                         <span>{t('receptionist.nav.classes')}</span>
                     </button>
+                    <button onClick={() => setActiveView('pos')} className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${activeView === 'pos' ? 'bg-primary/10 text-primary' : 'hover:bg-gray-200 dark:hover:bg-gray-800'}`}>
+                        <CurrencyDollarIcon className="w-6 h-6" />
+                        <span>{t('receptionist.nav.pos')}</span>
+                    </button>
                 </nav>
                  <div className="mt-auto pt-4 border-t border-black/5 dark:border-white/5">
                      <button onClick={toggleReportModal} className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20`}>
@@ -240,6 +248,7 @@ const ReceptionistDashboard: React.FC = () => {
                             {activeView === 'check-in' ? t('receptionist.nav.checkIn') : 
                              activeView === 'users' ? t('receptionist.nav.members') : 
                              activeView === 'classes' ? t('receptionist.nav.classes') : 
+                             activeView === 'pos' ? t('receptionist.nav.pos') :
                              activeView === 'settings' ? t('admin.dashboard.settings') :
                              t('admin.dashboard.notifications')}
                         </h2>

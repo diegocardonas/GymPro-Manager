@@ -1,5 +1,5 @@
 
-import React, { useContext } from 'react';
+import React, { useContext, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChartBarIcon } from './icons/ChartBarIcon';
 import { UserGroupIcon } from './icons/UserGroupIcon';
@@ -35,16 +35,16 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, on
     const { t } = useTranslation();
     const { toggleReportModal } = useContext(AuthContext);
     
-    const navGroups = [
+    const navGroups = useMemo(() => [
         {
-            title: "Overview",
+            title: t('sidebar.overview'),
             items: [
                 { id: 'dashboard', label: t('admin.sidebar.dashboard'), icon: ChartBarIcon },
                 { id: 'reports', label: t('admin.sidebar.reports'), icon: DocumentChartBarIcon },
             ]
         },
         {
-            title: "Management",
+            title: t('sidebar.management'),
             items: [
                 { id: 'users', label: t('admin.sidebar.userManagement'), icon: UserGroupIcon },
                 { id: 'payments', label: t('admin.sidebar.finances'), icon: CurrencyDollarIcon },
@@ -52,7 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, on
             ]
         },
         {
-            title: "Gym Operations",
+            title: t('sidebar.gymOperations'),
             items: [
                 { id: 'class-schedule', label: t('admin.sidebar.classSchedule'), icon: CalendarDaysIcon },
                 { id: 'routine-templates', label: t('admin.sidebar.routineTemplates'), icon: ClipboardDocumentListIcon },
@@ -60,21 +60,21 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, on
             ]
         },
         {
-            title: "Community",
+            title: t('sidebar.community'),
             items: [
                 { id: 'announcements', label: t('admin.sidebar.announcements'), icon: MegaphoneIcon },
                 { id: 'challenges', label: t('admin.sidebar.challenges'), icon: TrophyIcon },
             ]
         },
         {
-            title: "System",
+            title: t('sidebar.system'),
             items: [
                 { id: 'notifications', label: t('admin.sidebar.notifications'), icon: BellIcon },
                 { id: 'app-settings', label: t('admin.sidebar.appSettings'), icon: WrenchScrewdriverIcon },
                 { id: 'settings', label: t('admin.sidebar.mySettings'), icon: CogIcon },
             ]
         }
-    ];
+    ], [t]);
 
     return (
         <div className={`fixed h-full z-30 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-r border-black/10 dark:border-white/10 flex flex-col transition-all duration-300 ease-in-out

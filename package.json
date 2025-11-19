@@ -16,7 +16,8 @@
     "i18next": "^23.11.5",
     "react-i18next": "^14.1.2",
     "i18next-browser-languagedetector": "^8.0.0",
-    "i18next-http-backend": "^2.5.2"
+    "i18next-http-backend": "^2.5.2",
+    "@heroicons/react": "^2.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { UserGroupIcon } from '../icons/UserGroupIcon';
 import { UserCircleIcon } from '../icons/UserCircleIcon';
 import { CogIcon } from '../icons/CogIcon';
@@ -24,36 +25,38 @@ interface SidebarProps {
 }
 
 const TrainerSidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, onClose, isCollapsed, toggleCollapse }) => {
-    const navGroups = [
+    const { t } = useTranslation();
+
+    const navGroups = useMemo(() => [
         {
-            title: "Resumen",
+            title: t('sidebar.summary'),
             items: [
-                { id: 'dashboard', label: 'Panel de Control', icon: ChartBarIcon },
+                { id: 'dashboard', label: t('trainer.sidebar.dashboard'), icon: ChartBarIcon },
             ]
         },
         {
-            title: "Gestión",
+            title: t('sidebar.management'),
             items: [
-                { id: 'clients', label: 'Mis Clientes', icon: UserGroupIcon },
-                { id: 'schedule', label: 'Mi Horario', icon: CalendarDaysIcon },
-                { id: 'routine-templates', label: 'Mis Plantillas', icon: ClipboardDocumentListIcon },
+                { id: 'clients', label: t('trainer.sidebar.clients'), icon: UserGroupIcon },
+                { id: 'schedule', label: t('trainer.sidebar.schedule'), icon: CalendarDaysIcon },
+                { id: 'routine-templates', label: t('trainer.sidebar.templates'), icon: ClipboardDocumentListIcon },
             ]
         },
         {
-            title: "Comunicación",
+            title: t('sidebar.communication'),
             items: [
-                { id: 'messages', label: 'Mensajes', icon: ChatBubbleLeftRightIcon },
+                { id: 'messages', label: t('trainer.sidebar.messages'), icon: ChatBubbleLeftRightIcon },
             ]
         },
         {
-            title: "Cuenta",
+            title: t('sidebar.account'),
             items: [
-                { id: 'profile', label: 'Mi Perfil', icon: UserCircleIcon },
-                { id: 'notifications', label: 'Notificaciones', icon: BellIcon },
-                { id: 'settings', label: 'Ajustes', icon: CogIcon },
+                { id: 'profile', label: t('trainer.sidebar.profile'), icon: UserCircleIcon },
+                { id: 'notifications', label: t('trainer.sidebar.notifications'), icon: BellIcon },
+                { id: 'settings', label: t('trainer.sidebar.settings'), icon: CogIcon },
             ]
         }
-    ];
+    ], [t]);
 
     return (
         <div className={`fixed h-full z-30 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-r border-black/10 dark:border-white/10 flex flex-col transition-all duration-300 ease-in-out

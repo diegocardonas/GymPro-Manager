@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { User, Role, Notification, PreEstablishedRoutine, NotificationType, Payment, WorkoutSession, GymClass, Message, Announcement, Challenge, Achievement, EquipmentItem, IncidentReport, AICoachMessage, NutritionLog, MembershipStatus, ToastMessage } from './types';
@@ -26,10 +27,10 @@ import PhysiotherapistDashboard from './components/PhysiotherapistDashboard';
 import LoginScreen from './components/LoginScreen';
 import Footer from './components/Footer';
 import { ToastContainer } from './components/shared/Toast';
+import { CommandPalette } from './components/shared/CommandPalette';
 
 import { LogoIcon } from './components/icons/LogoIcon';
 import ReportIncidentModal from './components/shared/ReportIncidentModal';
-// FIX: Correctly import GoogleGenAI and Type from @google/genai.
 import { GoogleGenAI, Type } from "@google/genai";
 import { LogoutIcon } from './components/icons/LogoutIcon';
 import SplashScreen from './components/SplashScreen';
@@ -81,10 +82,9 @@ const App: React.FC = () => {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   
   useEffect(() => {
-    // Simula la carga de activos, la obtención de datos iniciales, etc.
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 2500); // Muestra la pantalla de bienvenida durante 2.5 segundos
+    }, 2500);
 
     return () => clearTimeout(timer);
   }, []);
@@ -107,16 +107,16 @@ const App: React.FC = () => {
     const userToLogin = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
     if (userToLogin) {
       setCurrentUser(userToLogin);
-      addToast(t('general.welcome', { name: userToLogin.name }), 'success');
+      addToast(t('toast.welcome', { name: userToLogin.name }), 'success');
     } else {
-      return t('components.settingsView.passwordErrorCurrent'); // Reusing error message for invalid credentials
+      return t('toast.passwordError');
     }
   }, [users, t, addToast]);
   
   const register = useCallback(async (user: any): Promise<string | void> => {
       const existingUser = users.find(u => u.email.toLowerCase() === user.email.toLowerCase());
       if(existingUser) {
-          return "Email already exists.";
+          return t('toast.emailExists');
       }
       
       const newUser: User = {
@@ -134,32 +134,32 @@ const App: React.FC = () => {
       
       setUsers(prev => [...prev, newUser]);
       setCurrentUser(newUser);
-      addToast("Account created successfully!", 'success');
-  }, [users, setUsers, addToast]);
+      addToast(t('toast.accountCreated'), 'success');
+  }, [users, setUsers, addToast, t]);
 
   const logout = useCallback(() => {
     setCurrentUser(null);
-    addToast("Logged out successfully", 'info');
-  }, [addToast]);
+    addToast(t('toast.loggedOut'), 'info');
+  }, [addToast, t]);
 
   const updateCurrentUser = useCallback((updatedUser: User) => {
     setCurrentUser(updatedUser);
     setUsers(prevUsers => prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u));
-    addToast("Profile updated", 'success');
-  }, [setUsers, addToast]);
+    addToast(t('toast.profileUpdated'), 'success');
+  }, [setUsers, addToast, t]);
 
   const updateUser = useCallback((updatedUser: User) => {
     setUsers(prevUsers => prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u));
     if(currentUser && currentUser.id === updatedUser.id) {
         setCurrentUser(updatedUser);
     }
-    addToast("User updated", 'success');
-  }, [currentUser, setUsers, addToast]);
+    addToast(t('toast.userUpdated'), 'success');
+  }, [currentUser, setUsers, addToast, t]);
 
   const addUser = useCallback((newUser: User) => {
     setUsers(prevUsers => [...prevUsers, newUser]);
-    addToast("User added", 'success');
-  }, [setUsers, addToast]);
+    addToast(t('toast.userAdded'), 'success');
+  }, [setUsers, addToast, t]);
 
   const deleteUser = useCallback((userId: string) => {
     setUsers(prevUsers => {
@@ -173,8 +173,8 @@ const App: React.FC = () => {
       });
       return updatedUsers.filter(u => u.id !== userId);
     });
-    addToast("User deleted", 'info');
-  }, [setUsers, addToast]);
+    addToast(t('toast.userDeleted'), 'info');
+  }, [setUsers, addToast, t]);
 
   const toggleBlockUser = useCallback((userIdToBlock: string) => {
     if (!currentUser) return;
@@ -185,11 +185,10 @@ const App: React.FC = () => {
         : [...currentBlockedIds, userIdToBlock];
     
     const updatedUser = { ...currentUser, blockedUserIds: newBlockedIds };
-    // Don't call updateCurrentUser here to avoid double toast, just update logic
     setCurrentUser(updatedUser);
     setUsers(prevUsers => prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u));
-    addToast(isBlocked ? "User unblocked" : "User blocked", 'info');
-  }, [currentUser, setUsers, addToast]);
+    addToast(isBlocked ? t('toast.userUnblocked') : t('toast.userBlocked'), 'info');
+  }, [currentUser, setUsers, addToast, t]);
 
   const markNotificationAsRead = useCallback((notificationId: string) => { setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)); }, [setNotifications]);
   const markAllNotificationsAsRead = useCallback((userId: string) => { setNotifications(prev => prev.map(n => n.userId === userId ? { ...n, isRead: true } : n)); }, [setNotifications]);
@@ -202,18 +201,18 @@ const App: React.FC = () => {
 
   const addRoutineTemplate = useCallback((newRoutine: PreEstablishedRoutine) => { 
       setPreEstablishedRoutines(prev => [...prev, newRoutine]); 
-      addToast("Routine template created", 'success');
-  }, [setPreEstablishedRoutines, addToast]);
+      addToast(t('toast.routineTemplateCreated'), 'success');
+  }, [setPreEstablishedRoutines, addToast, t]);
   
   const updateRoutineTemplate = useCallback((updatedRoutine: PreEstablishedRoutine) => { 
       setPreEstablishedRoutines(prev => prev.map(r => r.id === updatedRoutine.id ? updatedRoutine : r)); 
-      addToast("Routine template updated", 'success');
-  }, [setPreEstablishedRoutines, addToast]);
+      addToast(t('toast.routineTemplateUpdated'), 'success');
+  }, [setPreEstablishedRoutines, addToast, t]);
   
   const deleteRoutineTemplate = useCallback((routineId: string) => { 
       setPreEstablishedRoutines(prev => prev.filter(r => r.id !== routineId)); 
-      addToast("Routine template deleted", 'info');
-  }, [setPreEstablishedRoutines, addToast]);
+      addToast(t('toast.routineTemplateDeleted'), 'info');
+  }, [setPreEstablishedRoutines, addToast, t]);
 
   const logWorkout = useCallback((userId: string, session: WorkoutSession) => {
     setUsers(prev => prev.map(u => {
@@ -226,52 +225,67 @@ const App: React.FC = () => {
     const client = users.find(u => u.id === userId);
     if(client && client.trainerIds) {
       client.trainerIds.forEach(trainerId => {
-        addNotification({ userId: trainerId, title: 'Entrenamiento Registrado', message: `${client.name} acaba de registrar un entrenamiento.`, type: NotificationType.SUCCESS, });
+        addNotification({ 
+            userId: trainerId, 
+            title: t('notifications.workoutLoggedTitle'), 
+            message: t('notifications.workoutLoggedMsg', { name: client.name }), 
+            type: NotificationType.SUCCESS, 
+        });
       });
     }
-    addToast("Workout logged successfully! Great job!", 'success');
-  }, [users, addNotification, setUsers, addToast]);
+    addToast(t('toast.workoutLogged'), 'success');
+  }, [users, addNotification, setUsers, addToast, t]);
 
   const addGymClass = useCallback((gymClass: Omit<GymClass, 'id'>) => { 
       setGymClasses(prev => [...prev, { ...gymClass, id: `c${Date.now()}`}]); 
-      addToast("Class added to schedule", 'success');
-  }, [setGymClasses, addToast]);
+      addToast(t('toast.classAdded'), 'success');
+  }, [setGymClasses, addToast, t]);
   
   const updateGymClass = useCallback((updatedClass: GymClass) => { 
       setGymClasses(prev => prev.map(c => c.id === updatedClass.id ? updatedClass : c)); 
-      addToast("Class updated", 'success');
-  }, [setGymClasses, addToast]);
+      addToast(t('toast.classUpdated'), 'success');
+  }, [setGymClasses, addToast, t]);
   
   const deleteGymClass = useCallback((classId: string) => { 
       setGymClasses(prev => prev.filter(c => c.id !== classId)); 
-      addToast("Class cancelled", 'info');
-  }, [setGymClasses, addToast]);
+      addToast(t('toast.classCancelled'), 'info');
+  }, [setGymClasses, addToast, t]);
   
   const bookClass = useCallback((classId: string, userId: string) => {
     setGymClasses(prev => prev.map(c => {
       if (c.id === classId) {
         if (c.bookedClientIds.includes(userId)) { 
-            addToast("You are already booked for this class.", 'warning');
+            addToast(t('toast.alreadyBooked'), 'warning');
             return c; 
         }
         if (c.bookedClientIds.length >= c.capacity) { 
-            addToast("This class is fully booked.", 'error');
+            addToast(t('toast.classFull'), 'error');
             return c; 
         }
         const updatedClass = { ...c, bookedClientIds: [...c.bookedClientIds, userId] };
-        addNotification({ userId: c.trainerId, title: 'Nueva Reserva de Clase', message: `${users.find(u=>u.id===userId)?.name || 'Un cliente'} ha reservado tu clase de ${c.name}.`, type: NotificationType.INFO, });
-        addToast(`Successfully booked ${c.name}!`, 'success');
+        addNotification({ 
+            userId: c.trainerId, 
+            title: t('notifications.newBookingTitle'), 
+            message: t('notifications.newBookingMsg', { name: users.find(u=>u.id===userId)?.name || 'A client', class: c.name }), 
+            type: NotificationType.INFO, 
+        });
+        addToast(t('toast.bookedSuccess', { name: c.name }), 'success');
         return updatedClass;
       }
       return c;
     }));
-  }, [addNotification, users, setGymClasses, addToast]);
+  }, [addNotification, users, setGymClasses, addToast, t]);
 
   const sendMessage = useCallback((message: Omit<Message, 'id' | 'timestamp' | 'isRead'>) => {
     const newMessage: Message = { ...message, id: `m${Date.now()}`, timestamp: new Date().toISOString(), isRead: false, };
     setMessages(prev => [...prev, newMessage]);
-    addNotification({ userId: message.receiverId, title: 'Mensaje Nuevo', message: `Tienes un nuevo mensaje de ${users.find(u=>u.id===message.senderId)?.name || 'alguien'}.`, type: NotificationType.INFO });
-  }, [addNotification, users, setMessages]);
+    addNotification({ 
+        userId: message.receiverId, 
+        title: t('notifications.newMessageTitle'), 
+        message: t('notifications.newMessageMsg', { name: users.find(u=>u.id===message.senderId)?.name || 'Someone' }), 
+        type: NotificationType.INFO 
+    });
+  }, [addNotification, users, setMessages, t]);
   
   const markMessagesAsRead = useCallback((conversationId: string, userId: string) => {
     setMessages(prev => prev.map(msg =>
@@ -283,22 +297,21 @@ const App: React.FC = () => {
 
   const addAnnouncement = useCallback((announcement: Omit<Announcement, 'id' | 'timestamp'>) => { 
       setAnnouncements(prev => [{ ...announcement, id: `a${Date.now()}`, timestamp: new Date().toISOString() }, ...prev]); 
-      addToast("Announcement published", 'success');
-  }, [setAnnouncements, addToast]);
+      addToast(t('toast.announcementPublished'), 'success');
+  }, [setAnnouncements, addToast, t]);
   
   const updateAnnouncement = useCallback((updatedAnnouncement: Announcement) => { 
       setAnnouncements(prev => prev.map(a => a.id === updatedAnnouncement.id ? updatedAnnouncement : a)); 
-      addToast("Announcement updated", 'success');
-  }, [setAnnouncements, addToast]);
+      addToast(t('toast.announcementUpdated'), 'success');
+  }, [setAnnouncements, addToast, t]);
   
   const deleteAnnouncement = useCallback((announcementId: string) => { 
       setAnnouncements(prev => prev.filter(a => a.id !== announcementId)); 
-      addToast("Announcement removed", 'info');
-  }, [setAnnouncements, addToast]);
+      addToast(t('toast.announcementRemoved'), 'info');
+  }, [setAnnouncements, addToast, t]);
   
   // AI Coach Logic
   const sendAICoachMessage = useCallback(async (userId: string, message: AICoachMessage): Promise<AICoachMessage | null> => {
-    // Get or create chat session
     if (!aiChatSessions.has(userId)) {
         const chat = ai.chats.create({
             model: 'gemini-2.5-flash',
@@ -310,7 +323,6 @@ const App: React.FC = () => {
     }
     const chat = aiChatSessions.get(userId);
     
-    // Optimistically add user's message for better UX, but we will add it again with the response for safety.
     setUsers(prevUsers => prevUsers.map(u => {
         if (u.id === userId) {
             const updatedUser = { ...u, aiCoachHistory: [...(u.aiCoachHistory || []), message] };
@@ -326,16 +338,13 @@ const App: React.FC = () => {
         const result = await chat.sendMessage({ message: message.text });
         const modelResponse: AICoachMessage = {
             role: 'model',
-            // FIX: Correctly access the 'text' property on the GenerateContentResponse.
             text: result.text,
             timestamp: new Date().toISOString()
         };
         
-        // Single atomic update for model response
         setUsers(prevUsers => {
             return prevUsers.map(u => {
                 if (u.id === userId) {
-                    // Replace the optimistic user message with the final history
                     const historyWithoutOptimistic = u.aiCoachHistory?.slice(0, -1) || [];
                     const finalHistory = [...historyWithoutOptimistic, message, modelResponse];
                     const updatedUser = { ...u, aiCoachHistory: finalHistory };
@@ -353,7 +362,6 @@ const App: React.FC = () => {
         console.error("AI Coach Error:", error);
         const errorResponse: AICoachMessage = { role: 'model', text: t('app.aiCoachError'), timestamp: new Date().toISOString() };
         
-        // Add error response to history
         setUsers(prevUsers => {
             return prevUsers.map(u => {
                 if (u.id === userId) {
@@ -368,7 +376,7 @@ const App: React.FC = () => {
                 return u;
             });
         });
-        addToast("AI Coach is currently unavailable.", 'error');
+        addToast(t('toast.aiCoachUnavailable'), 'error');
 
         return errorResponse;
     }
@@ -377,68 +385,79 @@ const App: React.FC = () => {
   // Gamification Logic
   const addChallenge = useCallback((challenge: Omit<Challenge, 'id' | 'participants'>) => {
     setChallenges(prev => [...prev, { ...challenge, id: `chal-${Date.now()}`, participants: [] }]);
-    addToast("New challenge created!", 'success');
-  }, [setChallenges, addToast]);
+    addToast(t('toast.challengeCreated'), 'success');
+  }, [setChallenges, addToast, t]);
   
   const updateChallenge = useCallback((challenge: Challenge) => { 
       setChallenges(prev => prev.map(c => c.id === challenge.id ? challenge : c)); 
-      addToast("Challenge updated", 'success');
-  }, [setChallenges, addToast]);
+      addToast(t('toast.challengeUpdated'), 'success');
+  }, [setChallenges, addToast, t]);
   
   const deleteChallenge = useCallback((id: string) => { 
       setChallenges(prev => prev.filter(c => c.id !== id)); 
-      addToast("Challenge deleted", 'info');
-  }, [setChallenges, addToast]);
+      addToast(t('toast.challengeDeleted'), 'info');
+  }, [setChallenges, addToast, t]);
   
   const joinChallenge = useCallback((challengeId: string, userId: string) => {
     setChallenges(prev => prev.map(c => {
       if (c.id === challengeId && !c.participants.some(p => p.userId === userId)) {
-        addToast("You joined the challenge!", 'success');
+        addToast(t('toast.challengeJoined'), 'success');
         return { ...c, participants: [...c.participants, { userId, progress: 0 }] };
       }
       return c;
     }));
-  }, [setChallenges, addToast]);
+  }, [setChallenges, addToast, t]);
   
   const unlockAchievement = useCallback((userId: string, achievementId: string) => {
     setUsers(prev => prev.map(u => {
       if (u.id === userId && !(u.achievements || []).includes(achievementId)) {
-        addNotification({ userId, title: "¡Logro Desbloqueado!", message: `¡Has ganado la insignia "${achievements.find(a=>a.id === achievementId)?.name}"!`, type: NotificationType.SUCCESS });
-        addToast(`Achievement Unlocked: ${achievements.find(a=>a.id === achievementId)?.name}`, 'success');
+        const achievementName = achievements.find(a=>a.id === achievementId)?.name;
+        addNotification({ 
+            userId, 
+            title: t('notifications.achievementTitle'), 
+            message: t('notifications.achievementMsg', { name: achievementName }), 
+            type: NotificationType.SUCCESS 
+        });
+        addToast(t('toast.achievementUnlocked', { name: achievementName }), 'success');
         return { ...u, achievements: [...(u.achievements || []), achievementId] };
       }
       return u;
     }));
-  }, [addNotification, achievements, setUsers, addToast]);
+  }, [addNotification, achievements, setUsers, addToast, t]);
 
   // Equipment & Incidents Logic
   const addEquipment = useCallback((item: Omit<EquipmentItem, 'id'>) => { 
       setEquipment(prev => [...prev, { ...item, id: `eq-${Date.now()}` }]); 
-      addToast("Equipment added", 'success');
-  }, [setEquipment, addToast]);
+      addToast(t('toast.equipmentAdded'), 'success');
+  }, [setEquipment, addToast, t]);
   
   const updateEquipment = useCallback((item: EquipmentItem) => { 
       setEquipment(prev => prev.map(e => e.id === item.id ? item : e)); 
-      addToast("Equipment details updated", 'success');
-  }, [setEquipment, addToast]);
+      addToast(t('toast.equipmentUpdated'), 'success');
+  }, [setEquipment, addToast, t]);
   
   const deleteEquipment = useCallback((id: string) => { 
       setEquipment(prev => prev.filter(e => e.id !== id)); 
-      addToast("Equipment removed", 'info');
-  }, [setEquipment, addToast]);
+      addToast(t('toast.equipmentRemoved'), 'info');
+  }, [setEquipment, addToast, t]);
   
   const reportIncident = useCallback((incident: Omit<IncidentReport, 'id' | 'timestamp' | 'isResolved'>) => {
     const newIncident = { ...incident, id: `inc-${Date.now()}`, timestamp: new Date().toISOString(), isResolved: false };
     setIncidents(prev => [newIncident, ...prev]);
-    addNotification({ userId: '1', title: "Nuevo Reporte de Incidencia", message: `Se ha reportado un problema con el equipo ID ${incident.equipmentId}.`, type: NotificationType.ALERT });
+    addNotification({ 
+        userId: '1', 
+        title: t('notifications.incidentTitle'), 
+        message: t('notifications.incidentMsg', { id: incident.equipmentId }), 
+        type: NotificationType.ALERT 
+    });
     setIsReportModalOpen(false);
-    addToast("Incident reported successfully", 'warning');
-  }, [addNotification, setIncidents, addToast]);
+    addToast(t('toast.incidentReported'), 'warning');
+  }, [addNotification, setIncidents, addToast, t]);
   
   const resolveIncident = useCallback((id: string) => { 
       setIncidents(prev => prev.map(i => i.id === id ? { ...i, isResolved: true } : i)); 
-      addToast("Incident marked as resolved", 'success');
-  }, [setIncidents, addToast]);
+      addToast(t('toast.incidentResolved'), 'success');
+  }, [setIncidents, addToast, t]);
   
   const toggleReportModal = useCallback(() => {
     setIsReportModalOpen(prev => !prev);
@@ -478,15 +497,14 @@ const App: React.FC = () => {
             }
         });
         
-        // FIX: Correctly access the 'text' property on the GenerateContentResponse.
         const jsonText = response.text.trim();
         const analysis = JSON.parse(jsonText);
         newLog.aiAnalysis = analysis;
-        addToast("Meal analyzed successfully!", 'success');
+        addToast(t('toast.mealAnalyzed'), 'success');
     } catch (error) {
         console.error("Nutrition AI Error:", error);
         newLog.aiAnalysis = { estimatedCalories: "N/A", estimatedMacros: { protein: "N/A", carbs: "N/A", fat: "N/A" }, suggestion: t('app.nutritionLogError') };
-        addToast("Could not analyze meal. Added to log.", 'warning');
+        addToast(t('toast.mealAnalysisFailed'), 'warning');
     }
 
     setUsers(prevUsers => {
@@ -581,6 +599,7 @@ const App: React.FC = () => {
       <AuthContext.Provider value={authContextValue}>
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-sans transition-colors duration-300 flex flex-col">
           <ToastContainer toasts={toasts} removeToast={removeToast} />
+          <CommandPalette />
           {isLoading ? <SplashScreen /> : renderContent()}
         </div>
       </AuthContext.Provider>

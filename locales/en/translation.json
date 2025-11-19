@@ -30,7 +30,62 @@
         "justNow": "Just now",
         "messages": "Messages",
         "emergencyContact": "Emergency Contact",
-        "birthDate": "Date of Birth"
+        "birthDate": "Date of Birth",
+        "manage": "Manage",
+        "create": "Create"
+    },
+    "toast": {
+        "welcome": "Welcome, {{name}}",
+        "passwordError": "Invalid credentials.",
+        "accountCreated": "Account created successfully!",
+        "emailExists": "Email already exists.",
+        "loggedOut": "Logged out successfully",
+        "profileUpdated": "Profile updated",
+        "userUpdated": "User updated",
+        "userAdded": "User added",
+        "userDeleted": "User deleted",
+        "userUnblocked": "User unblocked",
+        "userBlocked": "User blocked",
+        "routineTemplateCreated": "Routine template created",
+        "routineTemplateUpdated": "Routine template updated",
+        "routineTemplateDeleted": "Routine template deleted",
+        "workoutLogged": "Workout logged successfully! Great job!",
+        "classAdded": "Class added to schedule",
+        "classUpdated": "Class updated",
+        "classCancelled": "Class cancelled",
+        "alreadyBooked": "You are already booked for this class.",
+        "classFull": "This class is fully booked.",
+        "bookedSuccess": "Successfully booked {{name}}!",
+        "announcementPublished": "Announcement published",
+        "announcementUpdated": "Announcement updated",
+        "announcementRemoved": "Announcement removed",
+        "challengeCreated": "New challenge created!",
+        "challengeUpdated": "Challenge updated",
+        "challengeDeleted": "Challenge deleted",
+        "challengeJoined": "You joined the challenge!",
+        "achievementUnlocked": "Achievement Unlocked: {{name}}",
+        "equipmentAdded": "Equipment added",
+        "equipmentUpdated": "Equipment details updated",
+        "equipmentRemoved": "Equipment removed",
+        "incidentReported": "Incident reported successfully",
+        "incidentResolved": "Incident marked as resolved",
+        "mealAnalyzed": "Meal analyzed successfully!",
+        "mealAnalysisFailed": "Could not analyze meal. Added to log.",
+        "aiCoachUnavailable": "AI Coach is currently unavailable."
+    },
+    "notifications": {
+        "workoutLoggedTitle": "Workout Logged",
+        "workoutLoggedMsg": "{{name}} just logged a workout.",
+        "newBookingTitle": "New Class Booking",
+        "newBookingMsg": "{{name}} has booked your {{class}} class.",
+        "newMessageTitle": "New Message",
+        "newMessageMsg": "You have a new message from {{name}}.",
+        "achievementTitle": "Achievement Unlocked!",
+        "achievementMsg": "You earned the \"{{name}}\" badge!",
+        "incidentTitle": "New Incident Report",
+        "incidentMsg": "An issue has been reported with equipment ID {{id}}.",
+        "renewalTitle": "Renewal Request",
+        "renewalMsg": "{{name}} has requested a membership renewal."
     },
     "roles": {
         "ADMIN": "Administrator",
@@ -70,6 +125,15 @@
         "Intermedio": "Intermediate",
         "Avanzado": "Advanced"
     },
+    "days": {
+        "Monday": "Monday",
+        "Tuesday": "Tuesday",
+        "Wednesday": "Wednesday",
+        "Thursday": "Thursday",
+        "Friday": "Friday",
+        "Saturday": "Saturday",
+        "Sunday": "Sunday"
+    },
     "splash": {
         "tagline": "Forging your best version."
     },
@@ -80,7 +144,7 @@
         "staffHealth": "Health and Wellness Staff"
     },
     "placeholders": {
-        "dashboardComing Soon": "Dashboard Coming Soon!",
+        "dashboardComingSoon": "Dashboard Coming Soon!",
         "dashboardInConstruction": "The dashboard for the '{{role}}' role is currently under construction. Please check back later.",
         "logout": "Log Out"
     },
@@ -88,6 +152,120 @@
         "reportProblem": "Report a Problem",
         "aiCoachError": "Sorry, I'm having trouble connecting right now. Please try again later.",
         "nutritionLogError": "Could not analyze the meal at this time."
+    },
+    "sidebar": {
+        "overview": "Overview",
+        "management": "Management",
+        "gymOperations": "Gym Operations",
+        "community": "Community",
+        "system": "System",
+        "home": "Home",
+        "training": "Training",
+        "account": "Account",
+        "summary": "Summary",
+        "communication": "Communication"
+    },
+    "client": {
+        "sidebar": {
+            "dashboard": "Dashboard",
+            "aiCoach": "AI Coach",
+            "routine": "My Routine",
+            "workoutLog": "Log Workout",
+            "nutritionLog": "Nutrition",
+            "progress": "My Progress",
+            "classes": "Classes",
+            "challenges": "Challenges",
+            "achievements": "My Achievements",
+            "messages": "Messages",
+            "membershipCard": "Digital Card",
+            "profile": "My Profile",
+            "notifications": "Notifications",
+            "settings": "Settings"
+        },
+        "dashboard": {
+            "welcomeBack": "Welcome back, {{name}}!",
+            "summaryDesc": "Here is a summary of your membership.",
+            "membershipStatus": "Membership Status",
+            "level": "Level",
+            "yourTrainers": "Your Trainers",
+            "unassigned": "Unassigned",
+            "startDate": "Start Date",
+            "endDate": "End Date",
+            "validFor": "Your membership is valid for another",
+            "days": "days",
+            "pleaseRenew": "Please renew your membership.",
+            "renewalPending": "Your renewal request is pending approval.",
+            "renewButton": "Renew Membership",
+            "renewPendingButton": "Renewal Pending"
+        },
+        "routine": {
+            "title": "My Weekly Routine",
+            "trainer": "Trainer",
+            "assignedBy": "Assigned by",
+            "noRoutine": "You don't have an assigned routine. Please contact your trainer.",
+            "exercise": "Exercise",
+            "sets": "Sets",
+            "reps": "Reps",
+            "restDay": "Rest Day"
+        },
+        "profile": {
+            "title": "My Profile",
+            "editProfile": "Edit Profile",
+            "memberSince": "Member Since",
+            "height": "Height",
+            "weight": "Weight",
+            "fitnessLevel": "Fitness Level",
+            "fitnessGoals": "Fitness Goals",
+            "dietaryPreferences": "Dietary Preferences",
+            "medicalConditions": "Medical Conditions",
+            "notSpecified": "Not specified"
+        },
+        "aiCoach": {
+            "systemInstruction": "You are an expert fitness coach and nutritionist AI for GymPro. Be encouraging, concise, and helpful. Answer questions about workouts, diet, and gym equipment."
+        }
+    },
+    "trainer": {
+        "sidebar": {
+            "dashboard": "Dashboard",
+            "clients": "My Clients",
+            "schedule": "My Schedule",
+            "templates": "My Templates",
+            "messages": "Messages",
+            "profile": "My Profile",
+            "notifications": "Notifications",
+            "settings": "Settings"
+        },
+        "dashboard": {
+            "welcome": "Welcome, {{name}}!",
+            "spotlight": "Client Spotlight",
+            "bestPerformance": "Best Performance",
+            "workoutsThisWeek": "workouts this week",
+            "needsAttention": "Needs Attention",
+            "allActive": "All clients are active!",
+            "newRecord": "New Personal Record",
+            "noRecords": "No new PRs logged recently.",
+            "upcomingClasses": "Upcoming Classes",
+            "noClasses": "No upcoming classes.",
+            "clientAlerts": "Client Alerts",
+            "membership": "Membership"
+        },
+        "clients": {
+            "title": "My Clients",
+            "manage": "Manage Client",
+            "manageTitle": "Manage {{name}}"
+        },
+        "routine": {
+            "applyTemplate": "Apply Template",
+            "select": "Select a routine...",
+            "myTemplates": "My Templates",
+            "globalTemplates": "Global Templates",
+            "or": "or",
+            "suggestAi": "Suggest with AI",
+            "generating": "Generating...",
+            "confirmApply": "Are you sure you want to apply template \"{{name}}\"? This will overwrite the current routine.",
+            "addExercise": "Add New Exercise",
+            "restDayText": "Add an exercise to start."
+        }
     },
     "components": {
         "languageSwitcher": {

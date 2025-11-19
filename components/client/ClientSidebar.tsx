@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HomeIcon } from '../icons/HomeIcon';
 import { UserCircleIcon } from '../icons/UserCircleIcon';
 import { CogIcon } from '../icons/CogIcon';
@@ -29,42 +30,44 @@ interface SidebarProps {
 }
 
 const ClientSidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, onClose, isCollapsed, toggleCollapse }) => {
-    const navGroups = [
+    const { t } = useTranslation();
+
+    const navGroups = useMemo(() => [
         {
-            title: "Inicio",
+            title: t('sidebar.home'),
             items: [
-                { id: 'dashboard', label: 'Panel de Control', icon: HomeIcon },
-                { id: 'ai-coach', label: 'Entrenador IA', icon: SparklesAiIcon },
+                { id: 'dashboard', label: t('client.sidebar.dashboard'), icon: HomeIcon },
+                { id: 'ai-coach', label: t('client.sidebar.aiCoach'), icon: SparklesAiIcon },
             ]
         },
         {
-            title: "Entrenamiento",
+            title: t('sidebar.training'),
             items: [
-                { id: 'routine', label: 'Mi Rutina', icon: ClipboardListIcon },
-                { id: 'workout-log', label: 'Registrar Sesión', icon: PencilIcon },
-                { id: 'nutrition-log', label: 'Nutrición', icon: AppleIcon },
-                { id: 'progress', label: 'Mi Progreso', icon: ChartBarIcon },
+                { id: 'routine', label: t('client.sidebar.routine'), icon: ClipboardListIcon },
+                { id: 'workout-log', label: t('client.sidebar.workoutLog'), icon: PencilIcon },
+                { id: 'nutrition-log', label: t('client.sidebar.nutritionLog'), icon: AppleIcon },
+                { id: 'progress', label: t('client.sidebar.progress'), icon: ChartBarIcon },
             ]
         },
         {
-            title: "Comunidad",
+            title: t('sidebar.community'),
             items: [
-                { id: 'classes', label: 'Clases', icon: CalendarDaysIcon },
-                { id: 'challenges', label: 'Desafíos', icon: TrophyIcon },
-                { id: 'achievements', label: 'Mis Logros', icon: TrophyIcon },
-                { id: 'messages', label: 'Mensajes', icon: ChatBubbleLeftRightIcon },
+                { id: 'classes', label: t('client.sidebar.classes'), icon: CalendarDaysIcon },
+                { id: 'challenges', label: t('client.sidebar.challenges'), icon: TrophyIcon },
+                { id: 'achievements', label: t('client.sidebar.achievements'), icon: TrophyIcon },
+                { id: 'messages', label: t('client.sidebar.messages'), icon: ChatBubbleLeftRightIcon },
             ]
         },
         {
-            title: "Cuenta",
+            title: t('sidebar.account'),
             items: [
-                { id: 'membership-card', label: 'Tarjeta Digital', icon: IdentificationIcon },
-                { id: 'profile', label: 'Mi Perfil', icon: UserCircleIcon },
-                { id: 'notifications', label: 'Notificaciones', icon: BellIcon },
-                { id: 'settings', label: 'Ajustes', icon: CogIcon },
+                { id: 'membership-card', label: t('client.sidebar.membershipCard'), icon: IdentificationIcon },
+                { id: 'profile', label: t('client.sidebar.profile'), icon: UserCircleIcon },
+                { id: 'notifications', label: t('client.sidebar.notifications'), icon: BellIcon },
+                { id: 'settings', label: t('client.sidebar.settings'), icon: CogIcon },
             ]
         }
-    ];
+    ], [t]);
 
     return (
         <div className={`fixed h-full z-30 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-r border-black/10 dark:border-white/10 flex flex-col transition-all duration-300 ease-in-out

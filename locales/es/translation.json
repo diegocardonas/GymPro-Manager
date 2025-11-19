@@ -30,7 +30,62 @@
         "justNow": "Justo ahora",
         "messages": "Mensajes",
         "emergencyContact": "Contacto de Emergencia",
-        "birthDate": "Fecha de Nacimiento"
+        "birthDate": "Fecha de Nacimiento",
+        "manage": "Gestionar",
+        "create": "Crear"
+    },
+    "toast": {
+        "welcome": "Bienvenido, {{name}}",
+        "passwordError": "Credenciales inválidas.",
+        "accountCreated": "¡Cuenta creada con éxito!",
+        "emailExists": "El email ya existe.",
+        "loggedOut": "Sesión cerrada correctamente",
+        "profileUpdated": "Perfil actualizado",
+        "userUpdated": "Usuario actualizado",
+        "userAdded": "Usuario añadido",
+        "userDeleted": "Usuario eliminado",
+        "userUnblocked": "Usuario desbloqueado",
+        "userBlocked": "Usuario bloqueado",
+        "routineTemplateCreated": "Plantilla de rutina creada",
+        "routineTemplateUpdated": "Plantilla de rutina actualizada",
+        "routineTemplateDeleted": "Plantilla de rutina eliminada",
+        "workoutLogged": "¡Entrenamiento registrado con éxito! ¡Buen trabajo!",
+        "classAdded": "Clase añadida al horario",
+        "classUpdated": "Clase actualizada",
+        "classCancelled": "Clase cancelada",
+        "alreadyBooked": "Ya estás registrado en esta clase.",
+        "classFull": "Esta clase está llena.",
+        "bookedSuccess": "¡Reserva exitosa para {{name}}!",
+        "announcementPublished": "Anuncio publicado",
+        "announcementUpdated": "Anuncio actualizado",
+        "announcementRemoved": "Anuncio eliminado",
+        "challengeCreated": "¡Nuevo desafío creado!",
+        "challengeUpdated": "Desafío actualizado",
+        "challengeDeleted": "Desafío eliminado",
+        "challengeJoined": "¡Te has unido al desafío!",
+        "achievementUnlocked": "Logro Desbloqueado: {{name}}",
+        "equipmentAdded": "Equipo añadido",
+        "equipmentUpdated": "Detalles del equipo actualizados",
+        "equipmentRemoved": "Equipo eliminado",
+        "incidentReported": "Incidencia reportada con éxito",
+        "incidentResolved": "Incidencia marcada como resuelta",
+        "mealAnalyzed": "¡Comida analizada con éxito!",
+        "mealAnalysisFailed": "No se pudo analizar la comida. Añadida al registro.",
+        "aiCoachUnavailable": "El Entrenador IA no está disponible actualmente."
+    },
+    "notifications": {
+        "workoutLoggedTitle": "Entrenamiento Registrado",
+        "workoutLoggedMsg": "{{name}} acaba de registrar un entrenamiento.",
+        "newBookingTitle": "Nueva Reserva de Clase",
+        "newBookingMsg": "{{name}} ha reservado tu clase de {{class}}.",
+        "newMessageTitle": "Nuevo Mensaje",
+        "newMessageMsg": "Tienes un nuevo mensaje de {{name}}.",
+        "achievementTitle": "¡Logro Desbloqueado!",
+        "achievementMsg": "¡Has ganado la insignia \"{{name}}\"!",
+        "incidentTitle": "Nuevo Reporte de Incidencia",
+        "incidentMsg": "Se ha reportado un problema con el equipo ID {{id}}.",
+        "renewalTitle": "Solicitud de Renovación",
+        "renewalMsg": "{{name}} ha solicitado una renovación de membresía."
     },
     "roles": {
         "ADMIN": "Administrador",
@@ -70,6 +125,15 @@
         "Intermedio": "Intermedio",
         "Avanzado": "Avanzado"
     },
+    "days": {
+        "Monday": "Lunes",
+        "Tuesday": "Martes",
+        "Wednesday": "Miércoles",
+        "Thursday": "Jueves",
+        "Friday": "Viernes",
+        "Saturday": "Sábado",
+        "Sunday": "Domingo"
+    },
     "splash": {
         "tagline": "Forjando tu mejor versión."
     },
@@ -88,6 +152,120 @@
         "reportProblem": "Reportar un problema",
         "aiCoachError": "Lo siento, tengo problemas para conectarme en este momento. Por favor, inténtalo de nuevo más tarde.",
         "nutritionLogError": "No se pudo analizar la comida en este momento."
+    },
+    "sidebar": {
+        "overview": "Resumen",
+        "management": "Gestión",
+        "gymOperations": "Operaciones",
+        "community": "Comunidad",
+        "system": "Sistema",
+        "home": "Inicio",
+        "training": "Entrenamiento",
+        "account": "Cuenta",
+        "summary": "Resumen",
+        "communication": "Comunicación"
+    },
+    "client": {
+        "sidebar": {
+            "dashboard": "Panel de Control",
+            "aiCoach": "Entrenador IA",
+            "routine": "Mi Rutina",
+            "workoutLog": "Registrar Sesión",
+            "nutritionLog": "Nutrición",
+            "progress": "Mi Progreso",
+            "classes": "Clases",
+            "challenges": "Desafíos",
+            "achievements": "Mis Logros",
+            "messages": "Mensajes",
+            "membershipCard": "Tarjeta Digital",
+            "profile": "Mi Perfil",
+            "notifications": "Notificaciones",
+            "settings": "Ajustes"
+        },
+        "dashboard": {
+            "welcomeBack": "¡Bienvenido de nuevo, {{name}}!",
+            "summaryDesc": "Aquí tienes un resumen de tu membresía.",
+            "membershipStatus": "Estado de la membresía",
+            "level": "Nivel",
+            "yourTrainers": "Tus entrenadores",
+            "unassigned": "Sin asignar",
+            "startDate": "Fecha de Inicio",
+            "endDate": "Fecha de Fin",
+            "validFor": "Tu membresía es válida por otros",
+            "days": "días",
+            "pleaseRenew": "Por favor, renueva tu membresía.",
+            "renewalPending": "Tu solicitud de renovación está pendiente de aprobación.",
+            "renewButton": "Renovar Membresía",
+            "renewPendingButton": "Renovación Pendiente"
+        },
+        "routine": {
+            "title": "Mi Rutina Semanal",
+            "trainer": "Entrenador",
+            "assignedBy": "Asignada por",
+            "noRoutine": "No tienes una rutina asignada. Por favor, contacta a tu entrenador.",
+            "exercise": "Ejercicio",
+            "sets": "Series",
+            "reps": "Rep.",
+            "restDay": "Día de Descanso"
+        },
+        "profile": {
+            "title": "Mi Perfil",
+            "editProfile": "Editar Perfil",
+            "memberSince": "Miembro Desde",
+            "height": "Altura",
+            "weight": "Peso",
+            "fitnessLevel": "Nivel Físico",
+            "fitnessGoals": "Metas de fitness",
+            "dietaryPreferences": "Preferencias alimentarias",
+            "medicalConditions": "Condiciones médicas",
+            "notSpecified": "No especificado"
+        },
+        "aiCoach": {
+            "systemInstruction": "Eres un experto entrenador personal y nutricionista IA para GymPro. Sé alentador, conciso y servicial. Responde preguntas sobre entrenamientos, dieta y equipamiento de gimnasio."
+        }
+    },
+    "trainer": {
+        "sidebar": {
+            "dashboard": "Panel de Control",
+            "clients": "Mis Clientes",
+            "schedule": "Mi Horario",
+            "templates": "Mis Plantillas",
+            "messages": "Mensajes",
+            "profile": "Mi Perfil",
+            "notifications": "Notificaciones",
+            "settings": "Ajustes"
+        },
+        "dashboard": {
+            "welcome": "¡Bienvenido, {{name}}!",
+            "spotlight": "Cliente Destacado",
+            "bestPerformance": "Mejor Rendimiento",
+            "workoutsThisWeek": "entrenamientos esta semana",
+            "needsAttention": "Necesita Seguimiento",
+            "allActive": "¡Todos los clientes están activos!",
+            "newRecord": "Nuevo Récord Personal",
+            "noRecords": "No se han registrado nuevos RPs recientemente.",
+            "upcomingClasses": "Próximas Clases",
+            "noClasses": "No hay próximas clases.",
+            "clientAlerts": "Alertas de Clientes",
+            "membership": "Membresía"
+        },
+        "clients": {
+            "title": "Mis Clientes",
+            "manage": "Gestionar Cliente",
+            "manageTitle": "Gestionar a {{name}}"
+        },
+        "routine": {
+            "applyTemplate": "Aplicar plantilla",
+            "select": "Selecciona una rutina...",
+            "myTemplates": "Mis Plantillas",
+            "globalTemplates": "Plantillas Globales",
+            "or": "o",
+            "suggestAi": "Sugerir con IA",
+            "generating": "Generando...",
+            "confirmApply": "¿Estás seguro de que quieres aplicar la plantilla \"{{name}}\"? Esto sobrescribirá la rutina actual.",
+            "addExercise": "Añadir Nuevo Ejercicio",
+            "restDayText": "Añade un ejercicio para empezar."
+        }
     },
     "components": {
         "languageSwitcher": {

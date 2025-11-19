@@ -28,11 +28,11 @@ import { useTranslation } from 'react-i18next';
 type View = 'dashboard' | 'routine' | 'workout-log' | 'progress' | 'classes' | 'messages' | 'membership-card' | 'profile' | 'notifications' | 'settings' | 'ai-coach' | 'challenges' | 'achievements' | 'nutrition-log';
 
 const StatusBadge: React.FC<{ status: MembershipStatus }> = ({ status }) => {
-  // FIX: Corrected the properties of the `statusInfo` object to use the enum keys (ACTIVE, EXPIRED, PENDING) instead of Spanish string values.
+  const { t } = useTranslation();
   const statusInfo: Record<MembershipStatus, { classes: string; text: string }> = {
-    [MembershipStatus.ACTIVE]: { classes: 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300', text: 'Activo' },
-    [MembershipStatus.EXPIRED]: { classes: 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300', text: 'Vencido' },
-    [MembershipStatus.PENDING]: { classes: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-300', text: 'Aprobación Pendiente' },
+    [MembershipStatus.ACTIVE]: { classes: 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-300', text: t(`statuses.membership.${MembershipStatus.ACTIVE}`) },
+    [MembershipStatus.EXPIRED]: { classes: 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300', text: t(`statuses.membership.${MembershipStatus.EXPIRED}`) },
+    [MembershipStatus.PENDING]: { classes: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-300', text: t(`statuses.membership.${MembershipStatus.PENDING}`) },
   };
   const { classes, text } = statusInfo[status];
 
@@ -44,18 +44,18 @@ const StatusBadge: React.FC<{ status: MembershipStatus }> = ({ status }) => {
 };
 
 const DashboardView: React.FC<{user: User, trainers: User[], tier: MembershipTier | undefined, onRenew: () => void, announcements: Announcement[], onNavigate: (view: View, contact?: User) => void}> = ({ user, trainers, tier, onRenew, announcements, onNavigate }) => {
+    const { t } = useTranslation();
     const { name, membership } = user;
     const endDate = new Date(membership.endDate);
     const isExpired = new Date() > endDate;
     const daysRemaining = Math.max(0, Math.ceil((endDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)));
-    // FIX: Corrected `MembershipStatus.PENDIENTE` to `MembershipStatus.PENDING`.
     const isPending = membership.status === MembershipStatus.PENDING;
     const latestAnnouncement = announcements[0];
 
     return (
         <div className="w-full max-w-2xl bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg ring-1 ring-black/5 dark:ring-white/10 p-6 md:p-8">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">¡Bienvenido de nuevo, {name}!</h2>
-            <p className="text-gray-500 dark:text-gray-400 mb-8">Aquí tienes un resumen de tu membresía.</p>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{t('client.dashboard.welcomeBack', { name })}</h2>
+            <p className="text-gray-500 dark:text-gray-400 mb-8">{t('client.dashboard.summaryDesc')}</p>
             
             {latestAnnouncement && (
                 <div className="mb-8 p-4 bg-blue-100 dark:bg-blue-900/30 border-l-4 border-blue-500 rounded-r-lg">
@@ -66,50 +66,48 @@ const DashboardView: React.FC<{user: User, trainers: User[], tier: MembershipTie
             
             <div className="bg-gray-100 dark:bg-gray-700/50 rounded-xl p-6 space-y-4">
                 <div className="flex justify-between items-center">
-                    <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Estado de la membresía</h3>
+                    <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{t('client.dashboard.membershipStatus')}</h3>
                     <StatusBadge status={membership.status} />
                 </div>
                  {tier && (
                     <div className="flex justify-between items-center pt-4">
-                        <span className="text-gray-500 dark:text-gray-400 text-xl font-semibold">Nivel:</span>
+                        <span className="text-gray-500 dark:text-gray-400 text-xl font-semibold">{t('client.dashboard.level')}:</span>
                         <span className={`font-semibold px-4 py-2 rounded-full text-sm text-white`} style={{backgroundColor: tier.color}}>{tier.name}</span>
                     </div>
                  )}
                  <div className="flex justify-between items-baseline pt-4">
-                    <span className="text-gray-500 dark:text-gray-400">Tus entrenadores:</span>
+                    <span className="text-gray-500 dark:text-gray-400">{t('client.dashboard.yourTrainers')}:</span>
                     <div className="font-semibold text-gray-800 dark:text-gray-100 text-right">
                         {trainers.length > 0 ? trainers.map((t, i) => (
                            <React.Fragment key={t.id}>
                                <button onClick={() => onNavigate('messages', t)} className="hover:underline text-primary">{t.name}</button>
                                {i < trainers.length - 1 && ', '}
                            </React.Fragment>
-                        )) : 'Sin asignar'}
+                        )) : t('client.dashboard.unassigned')}
                     </div>
                 </div>
                 
                 <div className="text-left pt-2">
                     <div className="flex justify-between items-baseline">
-                        <span className="text-gray-500 dark:text-gray-400">Fecha de Inicio:</span>
+                        <span className="text-gray-500 dark:text-gray-400">{t('client.dashboard.startDate')}:</span>
                         <span className="font-semibold text-gray-800 dark:text-gray-100">{new Date(membership.startDate).toLocaleDateString()}</span>
                     </div>
                     <div className="flex justify-between items-baseline mt-2">
-                        <span className="text-gray-500 dark:text-gray-400">Fecha de Fin:</span>
+                        <span className="text-gray-500 dark:text-gray-400">{t('client.dashboard.endDate')}:</span>
                         <span className="font-semibold text-gray-800 dark:text-gray-100">{endDate.toLocaleDateString()}</span>
                     </div>
                     <div className="mt-4 pt-4 border-t border-gray-300 dark:border-gray-600">
-                        {/* FIX: Corrected `MembershipStatus.ACTIVO` to `MembershipStatus.ACTIVE`. */}
                         {membership.status === MembershipStatus.ACTIVE && !isExpired ? (
                              <p className="text-center text-lg">
-                                Tu membresía es válida por otros <span className="font-bold text-teal-600 dark:text-teal-300">{daysRemaining}</span> días.
+                                {t('client.dashboard.validFor')} <span className="font-bold text-teal-600 dark:text-teal-300">{daysRemaining}</span> {t('client.dashboard.days')}.
                             </p>
-                        // FIX: Corrected `MembershipStatus.VENCIDO` to `MembershipStatus.EXPIRED`.
                         ) : membership.status === MembershipStatus.EXPIRED ? (
                             <p className="text-center text-lg text-red-600 dark:text-red-400 font-semibold">
-                                Por favor, renueva tu membresía.
+                                {t('client.dashboard.pleaseRenew')}
                             </p>
                         ) : (
                              <p className="text-center text-lg text-yellow-600 dark:text-yellow-400 font-semibold">
-                                Tu solicitud de renovación está pendiente de aprobación.
+                                {t('client.dashboard.renewalPending')}
                             </p>
                         )}
                     </div>
@@ -120,13 +118,14 @@ const DashboardView: React.FC<{user: User, trainers: User[], tier: MembershipTie
                 disabled={isPending}
                 className="mt-8 w-full mx-auto max-w-xs px-4 py-3 text-lg font-semibold text-primary-foreground bg-primary rounded-lg shadow-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-75 transition duration-300 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {isPending ? 'Renovación Pendiente' : 'Renovar Membresía'}
+              {isPending ? t('client.dashboard.renewPendingButton') : t('client.dashboard.renewButton')}
             </button>
         </div>
     );
 };
 
 const RoutineView: React.FC<{onNavigate: (view: View) => void, onShare: (routine: DailyRoutine[]) => void}> = ({ onNavigate, onShare }) => {
+    const { t } = useTranslation();
     const { currentUser, myTrainers } = useContext(AuthContext);
     const [selectedTrainerId, setSelectedTrainerId] = useState<string | null>(null);
 
@@ -156,20 +155,15 @@ const RoutineView: React.FC<{onNavigate: (view: View) => void, onShare: (routine
     );
 
     const weekDays: DailyRoutine['day'][] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    const weekDaysSpanish: { [key in DailyRoutine['day']]: string } = {
-        'Monday': 'Lunes', 'Tuesday': 'Martes', 'Wednesday': 'Miércoles', 'Thursday': 'Jueves',
-        'Friday': 'Viernes', 'Saturday': 'Sábado', 'Sunday': 'Domingo'
-    };
-
-
+    
     return (
         <div className="w-full max-w-4xl bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg ring-1 ring-black/5 dark:ring-white/10 p-6 md:p-8">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-8 gap-4">
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Mi Rutina Semanal</h2>
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{t('client.routine.title')}</h2>
                 <div className="flex items-center gap-2">
                     {trainersWithRoutines.length > 1 && (
                         <>
-                            <label htmlFor="trainer-select" className="text-gray-500 dark:text-gray-400 font-medium">Entrenador:</label>
+                            <label htmlFor="trainer-select" className="text-gray-500 dark:text-gray-400 font-medium">{t('client.routine.trainer')}:</label>
                             <select
                                 id="trainer-select"
                                 value={selectedTrainerId || ''}
@@ -191,11 +185,11 @@ const RoutineView: React.FC<{onNavigate: (view: View) => void, onShare: (routine
             </div>
              {selectedTrainer && ! (trainersWithRoutines.length > 1) && (
                 <p className="text-gray-500 dark:text-gray-400 mb-4 -mt-4">
-                    Asignada por: <span className="font-semibold text-gray-700 dark:text-gray-200">{selectedTrainer.name}</span>
+                    {t('client.routine.assignedBy')}: <span className="font-semibold text-gray-700 dark:text-gray-200">{selectedTrainer.name}</span>
                 </p>
             )}
             {!selectedRoutine || selectedRoutine.length === 0 ? (
-                <p className="text-gray-500 dark:text-gray-400 text-center">No tienes una rutina asignada. Por favor, contacta a tu entrenador.</p>
+                <p className="text-gray-500 dark:text-gray-400 text-center">{t('client.routine.noRoutine')}</p>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {weekDays.map(day => {
@@ -203,13 +197,13 @@ const RoutineView: React.FC<{onNavigate: (view: View) => void, onShare: (routine
                         const hasWorkout = dayRoutine && dayRoutine.exercises.length > 0;
                         return (
                              <button key={day} onClick={() => onNavigate('workout-log')} disabled={!hasWorkout} className={`p-4 rounded-lg text-left transition-all duration-300 ${hasWorkout ? 'bg-gray-100 dark:bg-gray-700/50 hover:ring-2 hover:ring-primary' : 'bg-gray-100/50 dark:bg-gray-700/20 opacity-60 cursor-not-allowed'}`}>
-                                <h3 className="font-bold text-lg text-teal-600 dark:text-teal-300 mb-3 border-b border-gray-300 dark:border-gray-600 pb-2">{weekDaysSpanish[day]}</h3>
+                                <h3 className="font-bold text-lg text-teal-600 dark:text-teal-300 mb-3 border-b border-gray-300 dark:border-gray-600 pb-2">{t(`days.${day}`)}</h3>
                                 {hasWorkout ? (
                                     <>
                                         <div className="flex items-baseline text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">
-                                            <span className="flex-grow">Ejercicio</span>
-                                            <span className="w-12 text-center">Series</span>
-                                            <span className="w-16 text-center">Rep.</span>
+                                            <span className="flex-grow">{t('client.routine.exercise')}</span>
+                                            <span className="w-12 text-center">{t('client.routine.sets')}</span>
+                                            <span className="w-16 text-center">{t('client.routine.reps')}</span>
                                         </div>
                                         <div className="space-y-2">
                                             {dayRoutine.exercises.map((ex, index) => (
@@ -222,7 +216,7 @@ const RoutineView: React.FC<{onNavigate: (view: View) => void, onShare: (routine
                                         </div>
                                     </>
                                 ) : (
-                                    <p className="text-gray-400 dark:text-gray-500 text-center py-4">Día de Descanso</p>
+                                    <p className="text-gray-400 dark:text-gray-500 text-center py-4">{t('client.routine.restDay')}</p>
                                 )}
                             </button>
                         )
@@ -234,6 +228,8 @@ const RoutineView: React.FC<{onNavigate: (view: View) => void, onShare: (routine
 };
 
 const ProfileView: React.FC<{user: User, onEdit: () => void}> = ({ user, onEdit }) => {
+    const { t } = useTranslation();
+    
     const calculateAge = (birthDate?: string): number | undefined => {
         if (!birthDate) return undefined;
         const today = new Date();
@@ -251,10 +247,10 @@ const ProfileView: React.FC<{user: User, onEdit: () => void}> = ({ user, onEdit 
     return (
     <div className="w-full max-w-4xl bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg ring-1 ring-black/5 dark:ring-white/10 p-6 md:p-8">
         <div className="flex flex-col sm:flex-row justify-between items-start mb-8 gap-4">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Mi Perfil</h2>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{t('client.profile.title')}</h2>
             <button onClick={onEdit} className="flex items-center space-x-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg font-semibold transition-colors w-full sm:w-auto justify-center">
                 <PencilIcon className="w-5 h-5"/>
-                <span>Editar Perfil</span>
+                <span>{t('client.profile.editProfile')}</span>
             </button>
         </div>
         
@@ -272,54 +268,54 @@ const ProfileView: React.FC<{user: User, onEdit: () => void}> = ({ user, onEdit 
             <div className="w-full border-t md:border-t-0 md:border-l border-gray-200 dark:border-gray-700 mt-6 md:mt-0 pt-6 md:pt-0 md:pl-8">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
                     <div>
-                        <h4 className="font-semibold text-gray-500 dark:text-gray-400">Teléfono</h4>
-                        <p className="text-gray-800 dark:text-gray-200">{user.phone || 'No especificado'}</p>
+                        <h4 className="font-semibold text-gray-500 dark:text-gray-400">{t('general.phone')}</h4>
+                        <p className="text-gray-800 dark:text-gray-200">{user.phone || t('client.profile.notSpecified')}</p>
                     </div>
                     <div>
-                        <h4 className="font-semibold text-gray-500 dark:text-gray-400">Miembro Desde</h4>
+                        <h4 className="font-semibold text-gray-500 dark:text-gray-400">{t('client.profile.memberSince')}</h4>
                         <p className="text-gray-800 dark:text-gray-200">{new Date(user.joinDate).toLocaleDateString()}</p>
                     </div>
                     <div>
-                        <h4 className="font-semibold text-gray-500 dark:text-gray-400">Género</h4>
-                        <p className="text-gray-800 dark:text-gray-200">{user.gender || 'No especificado'}</p>
+                        <h4 className="font-semibold text-gray-500 dark:text-gray-400">{t('admin.userDetailsModal.gender')}</h4>
+                        <p className="text-gray-800 dark:text-gray-200">{user.gender ? t(`genders.${user.gender}`) : t('client.profile.notSpecified')}</p>
                     </div>
                      <div>
-                        <h4 className="font-semibold text-gray-500 dark:text-gray-400">Edad</h4>
-                        <p className="text-gray-800 dark:text-gray-200">{displayAge ? `${displayAge} años` : 'No especificado'}</p>
+                        <h4 className="font-semibold text-gray-500 dark:text-gray-400">{t('admin.userDetailsModal.age')}</h4>
+                        <p className="text-gray-800 dark:text-gray-200">{displayAge ? t('admin.userDetailsModal.ageYears', { age: displayAge }) : t('client.profile.notSpecified')}</p>
                     </div>
                     <div>
-                        <h4 className="font-semibold text-gray-500 dark:text-gray-400">Altura</h4>
-                        <p className="text-gray-800 dark:text-gray-200">{user.height ? `${user.height} cm` : 'No especificado'}</p>
+                        <h4 className="font-semibold text-gray-500 dark:text-gray-400">{t('client.profile.height')}</h4>
+                        <p className="text-gray-800 dark:text-gray-200">{user.height ? t('admin.userDetailsModal.heightCm', { height: user.height }) : t('client.profile.notSpecified')}</p>
                     </div>
                      <div>
-                        <h4 className="font-semibold text-gray-500 dark:text-gray-400">Peso</h4>
-                        <p className="text-gray-800 dark:text-gray-200">{user.weight ? `${user.weight} kg` : 'No especificado'}</p>
+                        <h4 className="font-semibold text-gray-500 dark:text-gray-400">{t('client.profile.weight')}</h4>
+                        <p className="text-gray-800 dark:text-gray-200">{user.weight ? t('admin.userDetailsModal.weightKg', { weight: user.weight }) : t('client.profile.notSpecified')}</p>
                     </div>
                      <div className="sm:col-span-2">
-                        <h4 className="font-semibold text-gray-500 dark:text-gray-400">Nivel Físico</h4>
-                        <p className="text-gray-800 dark:text-gray-200">{user.fitnessLevel || 'No especificado'}</p>
+                        <h4 className="font-semibold text-gray-500 dark:text-gray-400">{t('client.profile.fitnessLevel')}</h4>
+                        <p className="text-gray-800 dark:text-gray-200">{user.fitnessLevel ? t(`fitnessLevels.${user.fitnessLevel}`) : t('client.profile.notSpecified')}</p>
                     </div>
                 </div>
 
                 <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 space-y-4">
                      <div>
-                        <h3 className="font-semibold text-gray-500 dark:text-gray-400 mb-2">Metas de fitness</h3>
-                        <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{user.fitnessGoals || 'No especificado'}</p>
+                        <h3 className="font-semibold text-gray-500 dark:text-gray-400 mb-2">{t('client.profile.fitnessGoals')}</h3>
+                        <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{user.fitnessGoals || t('client.profile.notSpecified')}</p>
                      </div>
                      <div>
-                        <h3 className="font-semibold text-gray-500 dark:text-gray-400 mb-2">Preferencias alimentarias</h3>
-                        <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{user.dietaryPreferences || 'No especificado'}</p>
+                        <h3 className="font-semibold text-gray-500 dark:text-gray-400 mb-2">{t('client.profile.dietaryPreferences')}</h3>
+                        <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{user.dietaryPreferences || t('client.profile.notSpecified')}</p>
                      </div>
                       <div>
-                        <h3 className="font-semibold text-gray-500 dark:text-gray-400 mb-2">Condiciones médicas</h3>
-                        <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{user.medicalConditions || 'No especificado'}</p>
+                        <h3 className="font-semibold text-gray-500 dark:text-gray-400 mb-2">{t('client.profile.medicalConditions')}</h3>
+                        <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{user.medicalConditions || t('client.profile.notSpecified')}</p>
                      </div>
                 </div>
 
                 <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-                     <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-200 mb-2">Contacto de Emergencia</h3>
-                     <p><span className="font-semibold text-gray-500 dark:text-gray-400">Nombre:</span> {user.emergencyContact?.name || 'No especificado'}</p>
-                     <p><span className="font-semibold text-gray-500 dark:text-gray-400">Teléfono:</span> {user.emergencyContact?.phone || 'No especificado'}</p>
+                     <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-200 mb-2">{t('general.emergencyContact')}</h3>
+                     <p><span className="font-semibold text-gray-500 dark:text-gray-400">{t('general.name')}:</span> {user.emergencyContact?.name || t('client.profile.notSpecified')}</p>
+                     <p><span className="font-semibold text-gray-500 dark:text-gray-400">{t('general.phone')}:</span> {user.emergencyContact?.phone || t('client.profile.notSpecified')}</p>
                 </div>
             </div>
         </div>
@@ -328,13 +324,13 @@ const ProfileView: React.FC<{user: User, onEdit: () => void}> = ({ user, onEdit 
 
 
 const ClientDashboard: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser, myTrainers, announcements, logout, updateCurrentUser, addNotification } = useContext(AuthContext);
   const [activeView, setActiveView] = useState<View>('dashboard');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   
-  // Sidebar states
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile drawer
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // Desktop collapse
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const [preselectedContact, setPreselectedContact] = useState<User | null>(null);
   const [shareModalRoutine, setShareModalRoutine] = useState<DailyRoutine[] | PreEstablishedRoutine | null>(null);
@@ -347,7 +343,7 @@ const ClientDashboard: React.FC = () => {
   );
 
   if (!currentUser) {
-    return null; // Or a loading spinner
+    return null;
   }
 
   const handleProfileSave = (updatedUser: User) => {
@@ -363,14 +359,12 @@ const ClientDashboard: React.FC = () => {
   };
 
   const handleRenewMembership = () => {
-    // FIX: Corrected `MembershipStatus.PENDIENTE` to `MembershipStatus.PENDING`.
     if (!currentUser || currentUser.membership.status === MembershipStatus.PENDING) return;
     
     const updatedUser: User = {
         ...currentUser,
         membership: {
             ...currentUser.membership,
-            // FIX: Corrected `MembershipStatus.PENDIENTE` to `MembershipStatus.PENDING`.
             status: MembershipStatus.PENDING,
         },
     };
@@ -378,14 +372,14 @@ const ClientDashboard: React.FC = () => {
     updateCurrentUser(updatedUser);
 
     addNotification({
-        userId: '1', // Admin user ID
-        title: 'Solicitud de Renovación',
-        message: `${currentUser.name} ha solicitado una renovación de membresía.`,
+        userId: '1',
+        title: t('notifications.renewalTitle'),
+        message: t('notifications.renewalMsg', { name: currentUser.name }),
         type: NotificationType.INFO,
         linkTo: '/users'
     });
 
-    alert(`Tu solicitud de renovación ha sido enviada y está pendiente de aprobación.`);
+    alert(t('client.dashboard.renewalPending'));
   };
   
   const renderContent = () => {
@@ -430,7 +424,7 @@ const ClientDashboard: React.FC = () => {
                     <MenuIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
                 </button>
                 <div className="flex items-center space-x-4 ml-auto">
-                    <button onClick={() => setActiveView('messages')} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" aria-label="Mensajes">
+                    <button onClick={() => setActiveView('messages')} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" aria-label={t('client.sidebar.messages')}>
                         <ChatBubbleLeftRightIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
                     </button>
                     <NotificationBell 
@@ -438,7 +432,7 @@ const ClientDashboard: React.FC = () => {
                         onNotificationClick={(view) => setActiveView(view as View)}
                     />
                     <button onClick={() => setIsEditModalOpen(true)} className="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                        <span className="text-gray-700 dark:text-gray-300 hidden sm:inline">Bienvenido, {currentUser.name}</span>
+                        <span className="text-gray-700 dark:text-gray-300 hidden sm:inline">{t('general.welcome', { name: currentUser.name })}</span>
                         <img src={currentUser.avatarUrl} alt="Profile" className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700"/>
                     </button>
                     <button onClick={logout} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
@@ -466,6 +460,7 @@ const ClientDashboard: React.FC = () => {
 };
 
 const EditProfileModal: React.FC<{user: User, onSave: (user: User) => void, onClose: () => void}> = ({ user, onSave, onClose }) => {
+    const { t } = useTranslation();
     const [formData, setFormData] = useState(user);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -520,7 +515,7 @@ const EditProfileModal: React.FC<{user: User, onSave: (user: User) => void, onCl
     return (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
             <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col animate-scale-in">
-                <h2 className="text-2xl font-bold p-6 border-b border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white">Editar Perfil</h2>
+                <h2 className="text-2xl font-bold p-6 border-b border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white">{t('admin.editProfileModal.title')}</h2>
                 
                 <div className="p-6 space-y-4 overflow-y-auto">
                     <div className="flex items-center space-x-4">
@@ -531,9 +526,9 @@ const EditProfileModal: React.FC<{user: User, onSave: (user: User) => void, onCl
                                 onClick={() => fileInputRef.current?.click()}
                                 className="px-3 py-1 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-sm rounded-lg text-gray-800 dark:text-gray-200"
                             >
-                                Subir foto
+                                {t('admin.editProfileModal.uploadPhoto')}
                             </button>
-                            <button type="button" onClick={handleRandomAvatar} className="px-3 py-1 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-sm rounded-lg text-gray-800 dark:text-gray-200">Avatar aleatorio</button>
+                            <button type="button" onClick={handleRandomAvatar} className="px-3 py-1 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 text-sm rounded-lg text-gray-800 dark:text-gray-200">{t('admin.editProfileModal.randomAvatar')}</button>
                             <input
                                 type="file"
                                 ref={fileInputRef}
@@ -544,90 +539,90 @@ const EditProfileModal: React.FC<{user: User, onSave: (user: User) => void, onCl
                         </div>
                     </div>
 
-                    <h3 className="text-lg font-semibold border-b border-gray-200 dark:border-gray-700 pb-2 text-gray-800 dark:text-gray-200">Información Personal</h3>
+                    <h3 className="text-lg font-semibold border-b border-gray-200 dark:border-gray-700 pb-2 text-gray-800 dark:text-gray-200">{t('admin.editProfileModal.personalInfo')}</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-600 dark:text-gray-400">Nombre</label>
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-600 dark:text-gray-400">{t('general.name')}</label>
                             <input type="text" name="name" id="name" value={formData.name} onChange={handleChange} className="mt-1 block w-full bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary text-gray-900 dark:text-white" required/>
                         </div>
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-600 dark:text-gray-400">Email</label>
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-600 dark:text-gray-400">{t('general.email')}</label>
                             <input type="email" name="email" id="email" value={formData.email} className="mt-1 block w-full bg-gray-200/50 dark:bg-gray-700/50 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-500 dark:text-gray-400" disabled/>
-                            <p className="text-xs text-gray-500 mt-1">El email no se puede cambiar.</p>
+                            <p className="text-xs text-gray-500 mt-1">{t('admin.userManagement.emailCannotBeChanged')}</p>
                         </div>
                         <div>
-                            <label htmlFor="phone" className="block text-sm font-medium text-gray-600 dark:text-gray-400">Teléfono</label>
+                            <label htmlFor="phone" className="block text-sm font-medium text-gray-600 dark:text-gray-400">{t('general.phone')}</label>
                             <input type="tel" name="phone" id="phone" value={formData.phone} onChange={handleChange} className="mt-1 block w-full bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary text-gray-900 dark:text-white"/>
                         </div>
                         <div>
-                            <label htmlFor="gender" className="block text-sm font-medium text-gray-600 dark:text-gray-400">Género</label>
+                            <label htmlFor="gender" className="block text-sm font-medium text-gray-600 dark:text-gray-400">{t('admin.userDetailsModal.gender')}</label>
                             <select name="gender" id="gender" value={formData.gender || ''} onChange={handleChange} className="mt-1 block w-full bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary text-gray-900 dark:text-white">
-                                <option value="">Seleccionar...</option>
-                                <option value="Masculino">Masculino</option>
-                                <option value="Femenino">Femenino</option>
-                                <option value="Otro">Otro</option>
-                                <option value="Prefiero no decirlo">Prefiero no decirlo</option>
+                                <option value="">{t('admin.editProfileModal.selectGender')}</option>
+                                <option value="Masculino">{t('genders.Masculino')}</option>
+                                <option value="Femenino">{t('genders.Femenino')}</option>
+                                <option value="Otro">{t('genders.Otro')}</option>
+                                <option value="Prefiero no decirlo">{t('genders.Prefiero no decirlo')}</option>
                             </select>
                         </div>
                     </div>
 
-                    <h3 className="text-lg font-semibold border-b border-gray-200 dark:border-gray-700 pb-2 pt-4 text-gray-800 dark:text-gray-200">Datos Biométricos</h3>
+                    <h3 className="text-lg font-semibold border-b border-gray-200 dark:border-gray-700 pb-2 pt-4 text-gray-800 dark:text-gray-200">{t('admin.userDetailsModal.healthFitness')}</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                          <div>
-                            <label htmlFor="birthDate" className="block text-sm font-medium text-gray-600 dark:text-gray-400">Fecha de Nacimiento</label>
+                            <label htmlFor="birthDate" className="block text-sm font-medium text-gray-600 dark:text-gray-400">{t('general.birthDate')}</label>
                             <input type="date" name="birthDate" id="birthDate" value={formData.birthDate || ''} onChange={handleChange} className="mt-1 block w-full bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary text-gray-900 dark:text-white" />
                         </div>
                          <div>
-                            <label htmlFor="age" className="block text-sm font-medium text-gray-600 dark:text-gray-400">Edad</label>
+                            <label htmlFor="age" className="block text-sm font-medium text-gray-600 dark:text-gray-400">{t('admin.editProfileModal.age')}</label>
                             <input type="text" name="age" id="age" value={currentAge !== undefined ? currentAge : ''} readOnly className="mt-1 block w-full bg-gray-200/50 dark:bg-gray-700/50 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-500 dark:text-gray-400 cursor-not-allowed" />
                         </div>
                         <div>
-                            <label htmlFor="height" className="block text-sm font-medium text-gray-600 dark:text-gray-400">Altura (cm)</label>
+                            <label htmlFor="height" className="block text-sm font-medium text-gray-600 dark:text-gray-400">{t('admin.userDetailsModal.height')} (cm)</label>
                             <input type="number" name="height" id="height" value={formData.height || ''} onChange={handleChange} className="mt-1 block w-full bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary text-gray-900 dark:text-white" />
                         </div>
                         <div>
-                            <label htmlFor="weight" className="block text-sm font-medium text-gray-600 dark:text-gray-400">Peso (kg)</label>
+                            <label htmlFor="weight" className="block text-sm font-medium text-gray-600 dark:text-gray-400">{t('admin.userDetailsModal.weight')} (kg)</label>
                             <input type="number" name="weight" id="weight" value={formData.weight || ''} onChange={handleChange} className="mt-1 block w-full bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary text-gray-900 dark:text-white" />
                         </div>
                     </div>
                     
-                     <h3 className="text-lg font-semibold border-b border-gray-200 dark:border-gray-700 pb-2 pt-4 text-gray-800 dark:text-gray-200">Salud y Fitness</h3>
+                     <h3 className="text-lg font-semibold border-b border-gray-200 dark:border-gray-700 pb-2 pt-4 text-gray-800 dark:text-gray-200">{t('admin.userDetailsModal.healthFitness')}</h3>
                      <div>
-                        <label htmlFor="fitnessLevel" className="block text-sm font-medium text-gray-600 dark:text-gray-400">Nivel Físico</label>
+                        <label htmlFor="fitnessLevel" className="block text-sm font-medium text-gray-600 dark:text-gray-400">{t('admin.userDetailsModal.fitnessLevel')}</label>
                         <select name="fitnessLevel" id="fitnessLevel" value={formData.fitnessLevel || ''} onChange={handleChange} className="mt-1 block w-full bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary text-gray-900 dark:text-white">
-                            <option value="">Seleccionar...</option>
-                            {Object.values(FitnessLevel).map(level => <option key={level} value={level}>{level}</option>)}
+                            <option value="">{t('admin.editProfileModal.selectGender')}</option>
+                            {Object.values(FitnessLevel).map(level => <option key={level} value={level}>{t(`fitnessLevels.${level}`)}</option>)}
                         </select>
                     </div>
                     <div>
-                        <label htmlFor="fitnessGoals" className="block text-sm font-medium text-gray-600 dark:text-gray-400">Metas de fitness</label>
+                        <label htmlFor="fitnessGoals" className="block text-sm font-medium text-gray-600 dark:text-gray-400">{t('admin.userDetailsModal.fitnessGoals')}</label>
                         <textarea name="fitnessGoals" id="fitnessGoals" value={formData.fitnessGoals || ''} onChange={handleChange} rows={3} className="mt-1 block w-full bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary text-gray-900 dark:text-white" />
                     </div>
                     <div>
-                        <label htmlFor="dietaryPreferences" className="block text-sm font-medium text-gray-600 dark:text-gray-400">Preferencias alimentarias</label>
+                        <label htmlFor="dietaryPreferences" className="block text-sm font-medium text-gray-600 dark:text-gray-400">{t('admin.userDetailsModal.dietaryPreferences')}</label>
                         <textarea name="dietaryPreferences" id="dietaryPreferences" value={formData.dietaryPreferences || ''} onChange={handleChange} rows={3} className="mt-1 block w-full bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary text-gray-900 dark:text-white" />
                     </div>
                      <div>
-                        <label htmlFor="medicalConditions" className="block text-sm font-medium text-gray-600 dark:text-gray-400">Condiciones médicas o lesiones</label>
+                        <label htmlFor="medicalConditions" className="block text-sm font-medium text-gray-600 dark:text-gray-400">{t('admin.userDetailsModal.medicalConditions')}</label>
                         <textarea name="medicalConditions" id="medicalConditions" value={formData.medicalConditions || ''} onChange={handleChange} rows={3} className="mt-1 block w-full bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary text-gray-900 dark:text-white" />
                     </div>
                     
-                    <h3 className="text-lg font-semibold border-b border-gray-200 dark:border-gray-700 pb-2 pt-4 text-gray-800 dark:text-gray-200">Contacto de Emergencia</h3>
+                    <h3 className="text-lg font-semibold border-b border-gray-200 dark:border-gray-700 pb-2 pt-4 text-gray-800 dark:text-gray-200">{t('admin.editProfileModal.emergencyContact')}</h3>
                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label htmlFor="emergencyContactName" className="block text-sm font-medium text-gray-600 dark:text-gray-400">Nombre del Contacto</label>
+                            <label htmlFor="emergencyContactName" className="block text-sm font-medium text-gray-600 dark:text-gray-400">{t('admin.editProfileModal.contactName')}</label>
                             <input type="text" name="emergencyContactName" id="emergencyContactName" value={formData.emergencyContact?.name || ''} onChange={handleChange} className="mt-1 block w-full bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary text-gray-900 dark:text-white" />
                         </div>
                         <div>
-                            <label htmlFor="emergencyContactPhone" className="block text-sm font-medium text-gray-600 dark:text-gray-400">Teléfono del Contacto</label>
+                            <label htmlFor="emergencyContactPhone" className="block text-sm font-medium text-gray-600 dark:text-gray-400">{t('admin.editProfileModal.contactPhone')}</label>
                             <input type="tel" name="emergencyContactPhone" id="emergencyContactPhone" value={formData.emergencyContact?.phone || ''} onChange={handleChange} className="mt-1 block w-full bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary text-gray-900 dark:text-white" />
                         </div>
                     </div>
                 </div>
 
                 <div className="flex justify-end space-x-4 p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 sticky bottom-0">
-                    <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg font-semibold transition-colors text-gray-800 dark:text-gray-200">Cancelar</button>
-                    <button type="submit" className="px-4 py-2 bg-primary hover:bg-primary/90 rounded-lg font-semibold transition-colors text-primary-foreground">Guardar Cambios</button>
+                    <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg font-semibold transition-colors text-gray-800 dark:text-gray-200">{t('general.cancel')}</button>
+                    <button type="submit" className="px-4 py-2 bg-primary hover:bg-primary/90 rounded-lg font-semibold transition-colors text-primary-foreground">{t('general.saveChanges')}</button>
                 </div>
             </form>
         </div>

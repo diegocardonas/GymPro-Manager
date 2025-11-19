@@ -109,13 +109,29 @@ const SettingsView: React.FC = () => {
     }, [currentUser, updateCurrentUser]);
 
 
-    const handleDeactivate = () => {
+    const handleDeactivate = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
         if (!currentUser) return;
-        if (window.confirm(t('components.settingsView.confirmDeactivation'))) {
-            // Delete the user from the system
-            deleteUser(currentUser.id);
-            // Logout to clear session and return to login screen
-            logout();
+        
+        const confirmMessage = t('components.settingsView.confirmDeactivation');
+        if (window.confirm(confirmMessage)) {
+            try {
+                // 1. Delete the user data from the list of users
+                deleteUser(currentUser.id);
+                
+                // 2. Small delay to ensure state updates and localStorage persistence happen 
+                // before the app re-renders into the login state.
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                // 3. Log out to clear current session and redirect to login screen
+                logout();
+            } catch (error) {
+                console.error("Error deactivating account:", error);
+                // Force logout even if something else failed
+                logout();
+            }
         }
     };
 
@@ -294,7 +310,6 @@ const SettingsView: React.FC = () => {
                     </button>
                 </div>
             </SettingSection>
-{/* FIX: Removed non-standard "jsx" prop from style tag. */}
             <style>{`
                 .input-style {
                     background-color: #ffffff;
@@ -321,6 +336,7 @@ const SettingsView: React.FC = () => {
                     font-weight: 600;
                     transition: background-color 0.2s;
                     border: none;
+                    cursor: pointer;
                 }
                 .btn-primary {
                     background-color: hsl(var(--primary));

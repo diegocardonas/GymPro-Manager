@@ -389,7 +389,7 @@ const ClientDashboard: React.FC = () => {
       switch (activeView) {
           case 'dashboard': return <DashboardView user={currentUser} trainers={trainers} tier={membershipTier} onRenew={handleRenewMembership} announcements={announcements} onNavigate={handleDashboardNavigation} />;
           case 'routine': return <RoutineView onNavigate={setActiveView} onShare={setShareModalRoutine} />;
-          case 'workout-log': return <WorkoutLog />;
+          case 'workout-log': return <WorkoutLog onNavigate={(view) => setActiveView(view as View)} />;
           case 'progress': return <ProgressView />;
           case 'classes': return <ClassBooking />;
           case 'messages': return <MessagingView preselectedContact={preselectedContact} onPreselectConsumed={() => setPreselectedContact(null)} />;

@@ -1,3 +1,4 @@
+
 import React, { useContext, useMemo, useState, useEffect } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import { DailyRoutine, LoggedExercise, LoggedSet } from '../../types';
@@ -5,8 +6,15 @@ import { PlusIcon } from '../icons/PlusIcon';
 import { TrashIcon } from '../icons/TrashIcon';
 import { ClockIcon } from '../icons/ClockIcon';
 import { NumberInputWithButtons } from '../shared/NumberInputWithButtons';
+import { useTranslation } from 'react-i18next';
+import { MOCK_EXERCISES } from '../../data/mockExercises';
 
-const WorkoutLog: React.FC = () => {
+interface WorkoutLogProps {
+    onNavigate?: (view: string) => void;
+}
+
+const WorkoutLog: React.FC<WorkoutLogProps> = ({ onNavigate }) => {
+    const { t } = useTranslation();
     const { currentUser, logWorkout } = useContext(AuthContext);
 
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }) as DailyRoutine['day'];
@@ -15,15 +23,32 @@ const WorkoutLog: React.FC = () => {
         return firstRoutine?.find(r => r.day === today);
     }, [currentUser, today]);
 
-    const [loggedExercises, setLoggedExercises] = useState<LoggedExercise[]>(() => 
-        todaysRoutine?.exercises.map(ex => ({
-            name: ex.name,
-            plannedSets: ex.sets,
-            plannedReps: ex.reps,
-            completedSets: Array(ex.sets).fill({ weight: 0, reps: 0 })
-        })) || []
-    );
-    
+    // State for the exercises being logged
+    const [loggedExercises, setLoggedExercises] = useState<LoggedExercise[]>([]);
+    const [isFreestyle, setIsFreestyle] = useState(false);
+    const [isInitialized, setIsInitialized] = useState(false);
+
+    // Initialize exercises based on routine or existing state
+    useEffect(() => {
+        if (!isInitialized && currentUser) {
+            if (todaysRoutine?.exercises && todaysRoutine.exercises.length > 0) {
+                setLoggedExercises(todaysRoutine.exercises.map(ex => ({
+                    name: ex.name,
+                    plannedSets: ex.sets,
+                    plannedReps: ex.reps,
+                    completedSets: Array(ex.sets).fill({ weight: 0, reps: 0 })
+                })));
+                setIsInitialized(true);
+            } else if (todaysRoutine?.exercises && todaysRoutine.exercises.length === 0) {
+                 // It's a rest day or empty routine day
+                 setIsInitialized(true);
+            } else if (!todaysRoutine) {
+                // No routine found at all for today
+                setIsInitialized(true);
+            }
+        }
+    }, [todaysRoutine, isInitialized, currentUser]);
+
     // Timer State
     const [timerActive, setTimerActive] = useState(false);
     const [timeLeft, setTimeLeft] = useState(0);
@@ -61,28 +86,37 @@ const WorkoutLog: React.FC = () => {
     };
 
     const handleSetChange = (exIndex: number, setIndex: number, field: 'weight' | 'reps', value: number) => {
-        const newLoggedExercises = [...loggedExercises];
-        newLoggedExercises[exIndex].completedSets[setIndex] = {
-            ...newLoggedExercises[exIndex].completedSets[setIndex],
-            [field]: value
-        };
-        setLoggedExercises(newLoggedExercises);
+        setLoggedExercises(prev => {
+            const newLoggedExercises = [...prev];
+            newLoggedExercises[exIndex].completedSets = [...newLoggedExercises[exIndex].completedSets];
+            newLoggedExercises[exIndex].completedSets[setIndex] = {
+                ...newLoggedExercises[exIndex].completedSets[setIndex],
+                [field]: value
+            };
+            return newLoggedExercises;
+        });
     };
     
     const handleAddSet = (exIndex: number) => {
-        const newLoggedExercises = [...loggedExercises];
-        newLoggedExercises[exIndex].completedSets.push({ weight: 0, reps: 0});
-        setLoggedExercises(newLoggedExercises);
+        setLoggedExercises(prev => {
+            const newLoggedExercises = [...prev];
+            newLoggedExercises[exIndex].completedSets = [...newLoggedExercises[exIndex].completedSets, { weight: 0, reps: 0}];
+            return newLoggedExercises;
+        });
     };
 
     const handleRemoveSet = (exIndex: number, setIndex: number) => {
-        const newLoggedExercises = [...loggedExercises];
-        newLoggedExercises[exIndex].completedSets.splice(setIndex, 1);
-        setLoggedExercises(newLoggedExercises);
+        setLoggedExercises(prev => {
+            const newLoggedExercises = [...prev];
+            newLoggedExercises[exIndex].completedSets = newLoggedExercises[exIndex].completedSets.filter((_, i) => i !== setIndex);
+            return newLoggedExercises;
+        });
     };
 
     const handleLogWorkout = () => {
         if (!currentUser) return;
+        // Filter out exercises with no sets or incomplete data if strict validation is needed
+        // For now, we log everything that's visible
         const session = {
             id: `ws-${Date.now()}`,
             date: new Date().toISOString(),
@@ -90,29 +124,106 @@ const WorkoutLog: React.FC = () => {
             loggedExercises,
         };
         logWorkout(currentUser.id, session);
+        
+        // Redirect to progress view or dashboard
+        if (onNavigate) {
+            onNavigate('progress');
+        }
     };
 
-    if (!todaysRoutine || todaysRoutine.exercises.length === 0) {
+    const handleAddExercise = () => {
+        setLoggedExercises(prev => [...prev, {
+            name: '',
+            plannedSets: 3,
+            plannedReps: '10',
+            completedSets: [{ weight: 0, reps: 0 }, { weight: 0, reps: 0 }, { weight: 0, reps: 0 }]
+        }]);
+        setIsFreestyle(true); // Switch to "active" mode UI if we were on rest day screen
+    };
+
+    const handleRemoveExercise = (index: number) => {
+        setLoggedExercises(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const handleExerciseNameChange = (index: number, name: string) => {
+        setLoggedExercises(prev => {
+            const updated = [...prev];
+            updated[index] = { ...updated[index], name: name };
+            return updated;
+        });
+    };
+
+    const startFreestyle = () => {
+        setIsFreestyle(true);
+        handleAddExercise();
+    };
+
+    const isRestDay = (!todaysRoutine || todaysRoutine.exercises.length === 0) && !isFreestyle && loggedExercises.length === 0;
+
+    if (isRestDay) {
         return (
-            <div className="w-full max-w-2xl text-center bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg ring-1 ring-black/5 dark:ring-white/10 p-8">
+            <div className="w-full max-w-2xl text-center bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg ring-1 ring-black/5 dark:ring-white/10 p-8 flex flex-col items-center justify-center min-h-[400px]">
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">¡Feliz Día de Descanso!</h2>
-                <p className="text-gray-500 dark:text-gray-400">No hay entrenamiento programado para hoy. Disfruta tu recuperación.</p>
+                <p className="text-gray-500 dark:text-gray-400 mb-8">No hay entrenamiento programado para hoy. Disfruta tu recuperación.</p>
+                
+                <button 
+                    onClick={startFreestyle}
+                    className="px-6 py-3 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
+                >
+                    <PlusIcon className="w-5 h-5" />
+                    Registrar Entrenamiento Libre
+                </button>
             </div>
         );
     }
 
     return (
         <div className="w-full max-w-4xl space-y-6 pb-24">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Registrar Entrenamiento de Hoy: <span className="text-primary">{today}</span></h2>
+            <div className="flex justify-between items-center">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+                    {isFreestyle ? 'Entrenamiento Libre' : <>Registrar Entrenamiento: <span className="text-primary capitalize">{t(`days.${today}`)}</span></>}
+                </h2>
+                 <button onClick={handleAddExercise} className="px-4 py-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-lg text-sm font-semibold flex items-center gap-1 transition-colors">
+                    <PlusIcon className="w-4 h-4" /> Añadir Ejercicio
+                </button>
+            </div>
             
             <div className="space-y-6">
                 {loggedExercises.map((exercise, exIndex) => (
-                    <div key={exIndex} className="bg-white dark:bg-gray-800/50 rounded-xl ring-1 ring-black/5 dark:ring-white/10 p-5 shadow-sm">
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 className="font-bold text-xl text-gray-800 dark:text-gray-200">{exercise.name}</h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">Objetivo: {exercise.plannedSets} x {exercise.plannedReps}</p>
+                    <div key={exIndex} className="bg-white dark:bg-gray-800/50 rounded-xl ring-1 ring-black/5 dark:ring-white/10 p-5 shadow-sm relative group">
+                        <div className="flex justify-between items-start mb-4 gap-4">
+                            <div className="flex-grow">
+                                {exercise.name ? (
+                                    <div className="group/title relative">
+                                        <h3 className="font-bold text-xl text-gray-800 dark:text-gray-200">{exercise.name}</h3>
+                                        <button 
+                                            onClick={() => handleExerciseNameChange(exIndex, '')}
+                                            className="absolute -right-6 top-1 opacity-0 group-hover/title:opacity-100 text-gray-400 hover:text-primary"
+                                        >
+                                            <PencilIcon className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                     <select 
+                                        value={exercise.name} 
+                                        onChange={(e) => handleExerciseNameChange(exIndex, e.target.value)} 
+                                        className="w-full p-2 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg font-semibold text-gray-900 dark:text-white"
+                                        autoFocus
+                                    >
+                                        <option value="" disabled>Selecciona un ejercicio...</option>
+                                        {MOCK_EXERCISES.map(name => <option key={name} value={name}>{name}</option>)}
+                                    </select>
+                                )}
+                                {exercise.name && (
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Objetivo: {exercise.plannedSets} x {exercise.plannedReps}</p>
+                                )}
                             </div>
+                            <button 
+                                onClick={() => handleRemoveExercise(exIndex)}
+                                className="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors"
+                            >
+                                <TrashIcon className="w-5 h-5" />
+                            </button>
                         </div>
                         
                         <div className="space-y-3">
@@ -181,5 +292,12 @@ const WorkoutLog: React.FC = () => {
         </div>
     );
 };
+
+// Helper Icon since PencilIcon wasn't imported in the original WorkoutLog.tsx but used in the updated version
+const PencilIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+  </svg>
+);
 
 export default WorkoutLog;

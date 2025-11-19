@@ -44,7 +44,7 @@ interface AuthContextType {
   addGymClass: (gymClass: Omit<GymClass, 'id'>) => void;
   updateGymClass: (gymClass: GymClass) => void;
   deleteGymClass: (classId: string) => void;
-  bookClass: (classId: string, userId: string) => void; // Changed return type to void, handled by toast inside
+  bookClass: (classId: string, userId: string) => void; 
   
   sendMessage: (message: Omit<Message, 'id' | 'timestamp' | 'isRead'>) => void;
   markMessagesAsRead: (conversationId: string, userId: string) => void;

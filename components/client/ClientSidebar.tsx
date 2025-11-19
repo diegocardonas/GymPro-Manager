@@ -29,21 +29,41 @@ interface SidebarProps {
 }
 
 const ClientSidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, onClose, isCollapsed, toggleCollapse }) => {
-    const navItems = [
-        { id: 'dashboard', label: 'Panel de Control', icon: HomeIcon },
-        { id: 'ai-coach', label: 'Entrenador IA', icon: SparklesAiIcon },
-        { id: 'routine', label: 'Mi Rutina', icon: ClipboardListIcon },
-        { id: 'workout-log', label: 'Registrar Entrenamiento', icon: PencilIcon },
-        { id: 'progress', label: 'Mi Progreso', icon: ChartBarIcon },
-        { id: 'nutrition-log', label: 'Registro Nutricional', icon: AppleIcon },
-        { id: 'classes', label: 'Clases', icon: CalendarDaysIcon },
-        { id: 'challenges', label: 'Desafíos', icon: TrophyIcon },
-        { id: 'achievements', label: 'Mis Logros', icon: TrophyIcon },
-        { id: 'messages', label: 'Mensajes', icon: ChatBubbleLeftRightIcon },
-        { id: 'membership-card', label: 'Tarjeta de Miembro', icon: IdentificationIcon },
-        { id: 'profile', label: 'Mi Perfil', icon: UserCircleIcon },
-        { id: 'notifications', label: 'Notificaciones', icon: BellIcon },
-        { id: 'settings', label: 'Ajustes', icon: CogIcon },
+    const navGroups = [
+        {
+            title: "Inicio",
+            items: [
+                { id: 'dashboard', label: 'Panel de Control', icon: HomeIcon },
+                { id: 'ai-coach', label: 'Entrenador IA', icon: SparklesAiIcon },
+            ]
+        },
+        {
+            title: "Entrenamiento",
+            items: [
+                { id: 'routine', label: 'Mi Rutina', icon: ClipboardListIcon },
+                { id: 'workout-log', label: 'Registrar Sesión', icon: PencilIcon },
+                { id: 'nutrition-log', label: 'Nutrición', icon: AppleIcon },
+                { id: 'progress', label: 'Mi Progreso', icon: ChartBarIcon },
+            ]
+        },
+        {
+            title: "Comunidad",
+            items: [
+                { id: 'classes', label: 'Clases', icon: CalendarDaysIcon },
+                { id: 'challenges', label: 'Desafíos', icon: TrophyIcon },
+                { id: 'achievements', label: 'Mis Logros', icon: TrophyIcon },
+                { id: 'messages', label: 'Mensajes', icon: ChatBubbleLeftRightIcon },
+            ]
+        },
+        {
+            title: "Cuenta",
+            items: [
+                { id: 'membership-card', label: 'Tarjeta Digital', icon: IdentificationIcon },
+                { id: 'profile', label: 'Mi Perfil', icon: UserCircleIcon },
+                { id: 'notifications', label: 'Notificaciones', icon: BellIcon },
+                { id: 'settings', label: 'Ajustes', icon: CogIcon },
+            ]
+        }
     ];
 
     return (
@@ -66,34 +86,46 @@ const ClientSidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOp
             </div>
 
             <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 custom-scrollbar">
-                <ul className="space-y-1 px-2">
-                    {navItems.map(item => (
-                        <li key={item.id}>
-                            <button 
-                                onClick={() => {
-                                    setActiveView(item.id as View);
-                                    if (window.innerWidth < 768) onClose();
-                                }}
-                                className={`w-full flex items-center p-2 rounded-lg transition-colors group relative
-                                    ${activeView === item.id 
-                                        ? 'bg-primary/10 text-primary' 
-                                        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white'}
-                                    ${isCollapsed ? 'justify-center' : 'space-x-3'}
-                                `}
-                                title={isCollapsed ? item.label : ''}
-                            >
-                                <item.icon className={`w-6 h-6 flex-shrink-0 ${activeView === item.id ? 'text-primary' : ''}`} />
-                                {!isCollapsed && <span className="truncate font-medium">{item.label}</span>}
-                                
-                                {isCollapsed && (
-                                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">
-                                        {item.label}
-                                    </div>
-                                )}
-                            </button>
-                        </li>
-                    ))}
-                </ul>
+                {navGroups.map((group, index) => (
+                    <div key={index} className="mb-2">
+                        {!isCollapsed && (
+                            <h3 className="px-4 py-2 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                                {group.title}
+                            </h3>
+                        )}
+                        {isCollapsed && index !== 0 && (
+                            <div className="mx-4 my-2 border-t border-gray-200 dark:border-gray-800"></div>
+                        )}
+                        <ul className="space-y-1 px-2">
+                            {group.items.map(item => (
+                                <li key={item.id}>
+                                    <button 
+                                        onClick={() => {
+                                            setActiveView(item.id as View);
+                                            if (window.innerWidth < 768) onClose();
+                                        }}
+                                        className={`w-full flex items-center p-2 rounded-lg transition-colors group relative
+                                            ${activeView === item.id 
+                                                ? 'bg-primary/10 text-primary' 
+                                                : 'text-gray-500 dark:text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white'}
+                                            ${isCollapsed ? 'justify-center' : 'space-x-3'}
+                                        `}
+                                        title={isCollapsed ? item.label : ''}
+                                    >
+                                        <item.icon className={`w-6 h-6 flex-shrink-0 ${activeView === item.id ? 'text-primary' : ''}`} />
+                                        {!isCollapsed && <span className="truncate font-medium">{item.label}</span>}
+                                        
+                                        {isCollapsed && (
+                                            <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-md">
+                                                {item.label}
+                                            </div>
+                                        )}
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ))}
             </nav>
 
             <div className="hidden md:flex p-4 border-t border-black/5 dark:border-white/5 justify-end">

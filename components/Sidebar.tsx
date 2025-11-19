@@ -35,20 +35,45 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, on
     const { t } = useTranslation();
     const { toggleReportModal } = useContext(AuthContext);
     
-    const navItems = [
-        { id: 'dashboard', label: t('admin.sidebar.dashboard'), icon: ChartBarIcon },
-        { id: 'users', label: t('admin.sidebar.userManagement'), icon: UserGroupIcon },
-        { id: 'payments', label: t('admin.sidebar.finances'), icon: CurrencyDollarIcon },
-        { id: 'reports', label: t('admin.sidebar.reports'), icon: DocumentChartBarIcon },
-        { id: 'class-schedule', label: t('admin.sidebar.classSchedule'), icon: CalendarDaysIcon },
-        { id: 'announcements', label: t('admin.sidebar.announcements'), icon: MegaphoneIcon },
-        { id: 'challenges', label: t('admin.sidebar.challenges'), icon: TrophyIcon },
-        { id: 'equipment', label: t('admin.sidebar.equipment'), icon: WrenchIcon },
-        { id: 'membership-tiers', label: t('admin.sidebar.membershipTiers'), icon: CreditCardIcon },
-        { id: 'routine-templates', label: t('admin.sidebar.routineTemplates'), icon: ClipboardDocumentListIcon },
-        { id: 'notifications', label: t('admin.sidebar.notifications'), icon: BellIcon },
-        { id: 'app-settings', label: t('admin.sidebar.appSettings'), icon: WrenchScrewdriverIcon },
-        { id: 'settings', label: t('admin.sidebar.mySettings'), icon: CogIcon },
+    const navGroups = [
+        {
+            title: "Overview",
+            items: [
+                { id: 'dashboard', label: t('admin.sidebar.dashboard'), icon: ChartBarIcon },
+                { id: 'reports', label: t('admin.sidebar.reports'), icon: DocumentChartBarIcon },
+            ]
+        },
+        {
+            title: "Management",
+            items: [
+                { id: 'users', label: t('admin.sidebar.userManagement'), icon: UserGroupIcon },
+                { id: 'payments', label: t('admin.sidebar.finances'), icon: CurrencyDollarIcon },
+                { id: 'membership-tiers', label: t('admin.sidebar.membershipTiers'), icon: CreditCardIcon },
+            ]
+        },
+        {
+            title: "Gym Operations",
+            items: [
+                { id: 'class-schedule', label: t('admin.sidebar.classSchedule'), icon: CalendarDaysIcon },
+                { id: 'routine-templates', label: t('admin.sidebar.routineTemplates'), icon: ClipboardDocumentListIcon },
+                { id: 'equipment', label: t('admin.sidebar.equipment'), icon: WrenchIcon },
+            ]
+        },
+        {
+            title: "Community",
+            items: [
+                { id: 'announcements', label: t('admin.sidebar.announcements'), icon: MegaphoneIcon },
+                { id: 'challenges', label: t('admin.sidebar.challenges'), icon: TrophyIcon },
+            ]
+        },
+        {
+            title: "System",
+            items: [
+                { id: 'notifications', label: t('admin.sidebar.notifications'), icon: BellIcon },
+                { id: 'app-settings', label: t('admin.sidebar.appSettings'), icon: WrenchScrewdriverIcon },
+                { id: 'settings', label: t('admin.sidebar.mySettings'), icon: CogIcon },
+            ]
+        }
     ];
 
     return (
@@ -71,35 +96,47 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, on
             </div>
 
             <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 custom-scrollbar">
-                <ul className="space-y-1 px-2">
-                    {navItems.map(item => (
-                        <li key={item.id}>
-                            <button 
-                                onClick={() => {
-                                    setActiveView(item.id as View);
-                                    // Only close on mobile
-                                    if (window.innerWidth < 768) onClose();
-                                }}
-                                className={`w-full flex items-center p-2 rounded-lg transition-colors group relative
-                                    ${activeView === item.id 
-                                        ? 'bg-primary/10 text-primary' 
-                                        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'}
-                                    ${isCollapsed ? 'justify-center' : 'space-x-3'}
-                                `}
-                                title={isCollapsed ? item.label : ''}
-                            >
-                                <item.icon className={`w-6 h-6 flex-shrink-0 ${activeView === item.id ? 'text-primary' : ''}`} />
-                                {!isCollapsed && <span className="truncate font-medium">{item.label}</span>}
-                                
-                                {isCollapsed && (
-                                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">
-                                        {item.label}
-                                    </div>
-                                )}
-                            </button>
-                        </li>
-                    ))}
-                </ul>
+                {navGroups.map((group, index) => (
+                    <div key={index} className="mb-2">
+                        {!isCollapsed && (
+                            <h3 className="px-4 py-2 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                                {group.title}
+                            </h3>
+                        )}
+                        {isCollapsed && index !== 0 && (
+                            <div className="mx-4 my-2 border-t border-gray-200 dark:border-gray-800"></div>
+                        )}
+                        <ul className="space-y-1 px-2">
+                            {group.items.map(item => (
+                                <li key={item.id}>
+                                    <button 
+                                        onClick={() => {
+                                            setActiveView(item.id as View);
+                                            // Only close on mobile
+                                            if (window.innerWidth < 768) onClose();
+                                        }}
+                                        className={`w-full flex items-center p-2 rounded-lg transition-colors group relative
+                                            ${activeView === item.id 
+                                                ? 'bg-primary/10 text-primary' 
+                                                : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'}
+                                            ${isCollapsed ? 'justify-center' : 'space-x-3'}
+                                        `}
+                                        title={isCollapsed ? item.label : ''}
+                                    >
+                                        <item.icon className={`w-6 h-6 flex-shrink-0 ${activeView === item.id ? 'text-primary' : ''}`} />
+                                        {!isCollapsed && <span className="truncate font-medium">{item.label}</span>}
+                                        
+                                        {isCollapsed && (
+                                            <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-md">
+                                                {item.label}
+                                            </div>
+                                        )}
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                ))}
             </nav>
             
             <div className="p-4 border-t border-black/5 dark:border-white/5">
@@ -114,7 +151,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, on
                     {!isCollapsed && <span className="truncate font-medium">{t('app.reportProblem')}</span>}
                     
                      {isCollapsed && (
-                        <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">
+                        <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50 shadow-md">
                             {t('app.reportProblem')}
                         </div>
                     )}

@@ -24,6 +24,7 @@ import { ShareIcon } from './icons/ShareIcon';
 import ShareRoutineModal from './shared/ShareRoutineModal';
 import Footer from './Footer';
 import { useTranslation } from 'react-i18next';
+import { UserProfileMenu } from './shared/UserProfileMenu';
 
 type View = 'dashboard' | 'routine' | 'workout-log' | 'progress' | 'classes' | 'messages' | 'membership-card' | 'profile' | 'notifications' | 'settings' | 'ai-coach' | 'challenges' | 'achievements' | 'nutrition-log';
 
@@ -431,13 +432,14 @@ const ClientDashboard: React.FC = () => {
                         onViewAll={() => setActiveView('notifications')}
                         onNotificationClick={(view) => setActiveView(view as View)}
                     />
-                    <button onClick={() => setIsEditModalOpen(true)} className="flex items-center space-x-3 cursor-pointer p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                        <span className="text-gray-700 dark:text-gray-300 hidden sm:inline">{t('general.welcome', { name: currentUser.name })}</span>
-                        <img src={currentUser.avatarUrl} alt="Profile" className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700"/>
-                    </button>
-                    <button onClick={logout} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                        <LogoutIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-                    </button>
+                    {currentUser && (
+                        <UserProfileMenu 
+                            user={currentUser}
+                            onEditProfile={() => setIsEditModalOpen(true)}
+                            onSettings={() => setActiveView('settings')}
+                            onLogout={logout}
+                        />
+                    )}
                 </div>
             </header>
             <main className="flex-grow flex items-center justify-center p-4 md:p-8">

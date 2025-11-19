@@ -14,8 +14,10 @@ import { AppleIcon } from './icons/AppleIcon';
 import { ClipboardListIcon } from './icons/ClipboardListIcon';
 import { ExclamationTriangleIcon } from './icons/ExclamationTriangleIcon';
 import Footer from './Footer';
+import { UserProfileMenu } from './shared/UserProfileMenu';
+import SettingsView from './SettingsView';
 
-type View = 'clients' | 'logs' | 'notifications';
+type View = 'clients' | 'logs' | 'notifications' | 'settings';
 
 const NutritionistDashboard: React.FC = () => {
     const { t } = useTranslation();
@@ -113,6 +115,8 @@ const NutritionistDashboard: React.FC = () => {
                 );
             case 'notifications':
                 return <NotificationsView />;
+            case 'settings':
+                return <SettingsView />;
             default:
                 return null;
         }
@@ -123,6 +127,7 @@ const NutritionistDashboard: React.FC = () => {
             case 'clients': return t('nutritionist.nav.clients');
             case 'logs': return t('nutritionist.nav.logs');
             case 'notifications': return t('admin.dashboard.notifications');
+            case 'settings': return t('admin.dashboard.settings');
             default: return view;
         }
     }
@@ -163,13 +168,13 @@ const NutritionistDashboard: React.FC = () => {
                     <div className="flex items-center space-x-4">
                         <LanguageSwitcher />
                         <NotificationBell onViewAll={() => setActiveView('notifications')} onNotificationClick={() => {}} />
-                        <div className="flex items-center space-x-2">
-                            <img src={currentUser?.avatarUrl} alt="Profile" className="w-8 h-8 rounded-full object-cover" />
-                            <span className="hidden sm:inline font-medium">{currentUser?.name}</span>
-                        </div>
-                        <button onClick={logout} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                            <LogoutIcon className="w-6 h-6" />
-                        </button>
+                        {currentUser && (
+                            <UserProfileMenu 
+                                user={currentUser}
+                                onSettings={() => setActiveView('settings')}
+                                onLogout={logout}
+                            />
+                        )}
                     </div>
                 </header>
                 <main className="p-6 flex-1 overflow-y-auto">

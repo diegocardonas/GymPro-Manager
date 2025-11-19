@@ -17,8 +17,10 @@ import { CheckCircleIcon } from './icons/CheckCircleIcon';
 import { XCircleIcon } from './icons/XCircleIcon';
 import { ExclamationTriangleIcon } from './icons/ExclamationTriangleIcon';
 import Footer from './Footer';
+import { UserProfileMenu } from './shared/UserProfileMenu';
+import SettingsView from './SettingsView';
 
-type View = 'check-in' | 'users' | 'classes' | 'notifications';
+type View = 'check-in' | 'users' | 'classes' | 'notifications' | 'settings';
 
 const ReceptionistDashboard: React.FC = () => {
     const { t } = useTranslation();
@@ -190,6 +192,8 @@ const ReceptionistDashboard: React.FC = () => {
                 );
              case 'notifications':
                 return <NotificationsView />;
+             case 'settings':
+                return <SettingsView />;
             default:
                 return null;
         }
@@ -236,19 +240,20 @@ const ReceptionistDashboard: React.FC = () => {
                             {activeView === 'check-in' ? t('receptionist.nav.checkIn') : 
                              activeView === 'users' ? t('receptionist.nav.members') : 
                              activeView === 'classes' ? t('receptionist.nav.classes') : 
+                             activeView === 'settings' ? t('admin.dashboard.settings') :
                              t('admin.dashboard.notifications')}
                         </h2>
                     </div>
                     <div className="flex items-center space-x-4">
                         <LanguageSwitcher />
                         <NotificationBell onViewAll={() => setActiveView('notifications')} onNotificationClick={() => {}} />
-                        <div className="flex items-center space-x-2">
-                            <img src={currentUser?.avatarUrl} alt="Profile" className="w-8 h-8 rounded-full object-cover" />
-                            <span className="hidden sm:inline font-medium">{currentUser?.name}</span>
-                        </div>
-                        <button onClick={logout} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                            <LogoutIcon className="w-6 h-6" />
-                        </button>
+                        {currentUser && (
+                             <UserProfileMenu 
+                                user={currentUser}
+                                onSettings={() => setActiveView('settings')}
+                                onLogout={logout}
+                            />
+                        )}
                     </div>
                 </header>
                 <main className="p-6 flex-1 overflow-y-auto">

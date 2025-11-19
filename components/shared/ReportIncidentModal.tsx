@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import { EquipmentItem } from '../../types';
+import { useTranslation } from 'react-i18next';
 
 interface ReportIncidentModalProps {
     reportedById: string;
@@ -8,6 +9,7 @@ interface ReportIncidentModalProps {
 }
 
 const ReportIncidentModal: React.FC<ReportIncidentModalProps> = ({ reportedById, onClose }) => {
+    const { t } = useTranslation();
     const { equipment, reportIncident } = useContext(AuthContext);
     const [selectedEquipmentId, setSelectedEquipmentId] = useState('');
     const [description, setDescription] = useState('');
@@ -15,7 +17,7 @@ const ReportIncidentModal: React.FC<ReportIncidentModalProps> = ({ reportedById,
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedEquipmentId || !description) {
-            alert('Por favor, selecciona un equipo y describe el problema.');
+            alert(t('components.reportIncidentModal.alert'));
             return;
         }
         reportIncident({
@@ -28,10 +30,10 @@ const ReportIncidentModal: React.FC<ReportIncidentModalProps> = ({ reportedById,
     return (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
             <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg animate-scale-in">
-                <h2 className="text-2xl font-bold p-6 border-b border-gray-200 dark:border-gray-700">Reportar Problema de Equipo</h2>
+                <h2 className="text-2xl font-bold p-6 border-b border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white">{t('components.reportIncidentModal.title')}</h2>
                 <div className="p-6 space-y-4">
                     <div>
-                        <label htmlFor="equipmentId" className="block text-sm font-medium">Equipo</label>
+                        <label htmlFor="equipmentId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('components.reportIncidentModal.equipment')}</label>
                         <select
                             id="equipmentId"
                             value={selectedEquipmentId}
@@ -39,28 +41,28 @@ const ReportIncidentModal: React.FC<ReportIncidentModalProps> = ({ reportedById,
                             className="mt-1 block w-full input-style"
                             required
                         >
-                            <option value="" disabled>Selecciona un artículo...</option>
+                            <option value="" disabled>{t('components.reportIncidentModal.selectEquipment')}</option>
                             {equipment.map(item => (
                                 <option key={item.id} value={item.id}>{item.name} - {item.location}</option>
                             ))}
                         </select>
                     </div>
                     <div>
-                        <label htmlFor="description" className="block text-sm font-medium">Describe el Problema</label>
+                        <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('components.reportIncidentModal.describeProblem')}</label>
                         <textarea
                             id="description"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             rows={4}
                             className="mt-1 block w-full input-style"
-                            placeholder="p. ej., La pantalla no enciende, o hay un ruido fuerte del motor."
+                            placeholder={t('components.reportIncidentModal.descriptionPlaceholder')}
                             required
                         />
                     </div>
                 </div>
                 <div className="flex justify-end space-x-4 p-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
-                    <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg font-semibold">Cancelar</button>
-                    <button type="submit" className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold text-white">Enviar Reporte</button>
+                    <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg font-semibold text-gray-800 dark:text-white">{t('general.cancel')}</button>
+                    <button type="submit" className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg font-semibold text-white">{t('components.reportIncidentModal.submitReport')}</button>
                 </div>
                 {/* FIX: Removed non-standard "jsx" prop from style tag. */}
                 <style>{`

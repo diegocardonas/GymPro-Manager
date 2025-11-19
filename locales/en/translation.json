@@ -366,6 +366,32 @@
             "myClients": "My Clients",
             "staff": "Staff",
             "clients": "Clients"
+        },
+        "equipment": {
+            "title": "Equipment & Incidents",
+            "newEquipment": "New Equipment",
+            "activeIncidents": "Active Incident Reports",
+            "markResolved": "Mark as Resolved",
+            "unknownEquipment": "Unknown Equipment",
+            "headers": {
+                "name": "Name",
+                "type": "Type",
+                "location": "Location",
+                "status": "Status"
+            },
+            "modal": {
+                "editTitle": "Edit Equipment",
+                "addTitle": "New Equipment",
+                "name": "Name",
+                "type": "Type",
+                "typePlaceholder": "e.g., Cardio, Strength",
+                "location": "Location",
+                "locationPlaceholder": "e.g., Cardio Zone",
+                "status": "Status",
+                "save": "Save",
+                "cancel": "Cancel"
+            },
+            "confirmDelete": "Are you sure you want to delete this item?"
         }
     },
     "admin": {

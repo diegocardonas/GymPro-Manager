@@ -366,6 +366,32 @@
             "myClients": "Mis Clientes",
             "staff": "Personal",
             "clients": "Clientes"
+        },
+        "equipment": {
+            "title": "Equipos e Incidencias",
+            "newEquipment": "Nuevo Equipo",
+            "activeIncidents": "Reportes de Incidencias Activos",
+            "markResolved": "Marcar como Resuelto",
+            "unknownEquipment": "Equipo Desconocido",
+            "headers": {
+                "name": "Nombre",
+                "type": "Tipo",
+                "location": "Ubicación",
+                "status": "Estado"
+            },
+            "modal": {
+                "editTitle": "Editar Equipo",
+                "addTitle": "Nuevo Equipo",
+                "name": "Nombre",
+                "type": "Tipo",
+                "typePlaceholder": "p. ej., Cardio, Fuerza",
+                "location": "Ubicación",
+                "locationPlaceholder": "p. ej., Zona Cardio",
+                "status": "Estado",
+                "save": "Guardar",
+                "cancel": "Cancelar"
+            },
+            "confirmDelete": "¿Estás seguro de que quieres eliminar este equipo?"
         }
     },
     "admin": {

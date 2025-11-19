@@ -26,6 +26,7 @@ import { MOCK_TIERS } from '../data/membershipTiers';
 import { XCircleIcon } from './icons/XCircleIcon';
 import { PencilIcon } from './icons/PencilIcon';
 import LanguageSwitcher from './LanguageSwitcher';
+import Footer from './Footer';
 
 
 type View = 'dashboard' | 'users' | 'reports' | 'membership-tiers' | 'routine-templates' | 'app-settings' | 'settings' | 'notifications' | 'payments' | 'class-schedule' | 'announcements' | 'challenges' | 'equipment';
@@ -153,6 +154,7 @@ const AdminDashboard: React.FC = () => {
                         {renderContent()}
                     </div>
                 </main>
+                <Footer />
                 {isEditModalOpen && currentUser && <AdminEditProfileModal user={currentUser} onSave={handleProfileSave} onClose={() => setIsEditModalOpen(false)} />}
                 {viewingUser && <UserDetailsModal user={viewingUser} allUsers={users} onClose={() => setViewingUser(null)} onEdit={handleOpenEditFromView} />}
             </div>

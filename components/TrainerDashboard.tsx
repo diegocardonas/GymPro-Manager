@@ -21,6 +21,7 @@ import MessagingView from './MessagingView';
 import { XCircleIcon } from './icons/XCircleIcon';
 import { NumberInputWithButtons } from './shared/NumberInputWithButtons';
 import { ChatBubbleLeftRightIcon } from './icons/ChatBubbleLeftRightIcon';
+import Footer from './Footer';
 
 type View = 'dashboard' | 'clients' | 'schedule' | 'messages' | 'profile' | 'routine-templates' | 'notifications' | 'settings';
 
@@ -218,6 +219,7 @@ const TrainerDashboard: React.FC = () => {
                             {renderContent()}
                         </div>
                     </main>
+                    <Footer />
                     {isModalOpen && selectedClient && currentUser && <ManageClientModal client={selectedClient} trainer={currentUser} onSave={handleSaveChanges} onClose={handleCloseModal} />}
                     {isEditModalOpen && currentUser && <TrainerEditProfileModal user={currentUser} onSave={handleProfileSave} onClose={() => setIsEditModalOpen(false)} />}
                 </div>

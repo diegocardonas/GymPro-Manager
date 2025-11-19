@@ -12,12 +12,14 @@ import LanguageSwitcher from './LanguageSwitcher';
 import { UserGroupIcon } from './icons/UserGroupIcon';
 import { AppleIcon } from './icons/AppleIcon';
 import { ClipboardListIcon } from './icons/ClipboardListIcon';
+import { ExclamationTriangleIcon } from './icons/ExclamationTriangleIcon';
+import Footer from './Footer';
 
 type View = 'clients' | 'logs' | 'notifications';
 
 const NutritionistDashboard: React.FC = () => {
     const { t } = useTranslation();
-    const { currentUser, logout, users } = useContext(AuthContext);
+    const { currentUser, logout, users, toggleReportModal } = useContext(AuthContext);
     const [activeView, setActiveView] = useState<View>('clients');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [selectedClient, setSelectedClient] = useState<User | null>(null);
@@ -142,6 +144,12 @@ const NutritionistDashboard: React.FC = () => {
                         <span>{t('nutritionist.nav.logs')}</span>
                     </button>
                 </nav>
+                 <div className="mt-auto pt-4 border-t border-black/5 dark:border-white/5">
+                     <button onClick={toggleReportModal} className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20`}>
+                        <ExclamationTriangleIcon className="w-6 h-6" />
+                        <span>{t('app.reportProblem')}</span>
+                    </button>
+                </div>
             </div>
 
             <div className="flex-1 flex flex-col transition-all duration-300 ease-in-out ml-0">
@@ -167,6 +175,7 @@ const NutritionistDashboard: React.FC = () => {
                 <main className="p-6 flex-1 overflow-y-auto">
                     {renderContent()}
                 </main>
+                <Footer />
             </div>
              {isSidebarOpen && <div onClick={() => setIsSidebarOpen(false)} className="fixed inset-0 bg-black/60 z-20 md:hidden" />}
         </div>

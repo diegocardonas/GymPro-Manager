@@ -1,5 +1,6 @@
 import { createContext } from 'react';
-import { User, Notification, PreEstablishedRoutine, Payment, WorkoutSession, GymClass, Message, Announcement, Challenge, Achievement, EquipmentItem, IncidentReport, AICoachMessage, NutritionLog } from '../types';
+import { User, Notification, PreEstablishedRoutine, Payment, WorkoutSession, GymClass, Message, Announcement, Challenge, Achievement, EquipmentItem, IncidentReport, AICoachMessage, NutritionLog, Role, MembershipStatus } from '../types';
+import { MOCK_TIERS } from '../data/membershipTiers';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -63,10 +64,10 @@ interface AuthContextType {
 
   reportIncident: (incident: Omit<IncidentReport, 'id' | 'timestamp' | 'isResolved'>) => void;
   resolveIncident: (incidentId: string) => void;
+  toggleReportModal: () => void;
   
   addNutritionLog: (userId: string, log: Omit<NutritionLog, 'id'>) => Promise<void>;
   
-  // FIX: Add login and register to satisfy the unused LoginScreen component
   login: (email: string, password: string) => Promise<string | void>;
   register: (user: any) => Promise<string | void>;
 }
@@ -132,10 +133,10 @@ export const AuthContext = createContext<AuthContextType>({
 
   reportIncident: () => {},
   resolveIncident: () => {},
+  toggleReportModal: () => {},
   
   addNutritionLog: async () => {},
 
-  // FIX: Add dummy implementations for login and register
   login: async () => {},
   register: async () => {},
 });

@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { User, Role, Notification, PreEstablishedRoutine, NotificationType, Payment, WorkoutSession, GymClass, Message, Announcement, Challenge, Achievement, EquipmentItem, IncidentReport, AICoachMessage, NutritionLog, MembershipStatus } from './types';
@@ -13,6 +12,7 @@ import { MOCK_ANNOUNCEMENTS } from './data/mockAnnouncements';
 import { MOCK_ACHIEVEMENTS } from './data/mockAchievements';
 import { MOCK_CHALLENGES } from './data/mockChallenges';
 import { MOCK_EQUIPMENT } from './data/mockEquipment';
+import { MOCK_TIERS } from './data/membershipTiers';
 import { ThemeProvider } from './context/ThemeContext';
 
 import AdminDashboard from './components/AdminDashboard';
@@ -23,6 +23,8 @@ import GeneralManagerDashboard from './components/GeneralManagerDashboard';
 import GroupInstructorDashboard from './components/GroupInstructorDashboard';
 import NutritionistDashboard from './components/NutritionistDashboard';
 import PhysiotherapistDashboard from './components/PhysiotherapistDashboard';
+import LoginScreen from './components/LoginScreen';
+import Footer from './components/Footer';
 
 import { LogoIcon } from './components/icons/LogoIcon';
 import ReportIncidentModal from './components/shared/ReportIncidentModal';
@@ -30,6 +32,7 @@ import ReportIncidentModal from './components/shared/ReportIncidentModal';
 import { GoogleGenAI, Type } from "@google/genai";
 import { LogoutIcon } from './components/icons/LogoutIcon';
 import SplashScreen from './components/SplashScreen';
+import LanguageSwitcher from './components/LanguageSwitcher';
 
 function usePersistentState<T>(key: string, defaultValue: T): [T, React.Dispatch<React.SetStateAction<T>>] {
   const [state, setState] = useState<T>(() => {
@@ -55,32 +58,6 @@ function usePersistentState<T>(key: string, defaultValue: T): [T, React.Dispatch
 
   return [state, setState];
 }
-
-const LanguageSwitcher: React.FC = () => {
-    const { i18n } = useTranslation();
-
-    const changeLanguage = (lng: string) => {
-        i18n.changeLanguage(lng);
-    };
-
-    return (
-        <div className="flex items-center space-x-2">
-            <button
-                onClick={() => changeLanguage('en')}
-                className={`px-2 py-1 text-sm rounded-md flex items-center gap-1 ${i18n.language.startsWith('en') ? 'bg-primary text-primary-foreground' : 'bg-gray-200 dark:bg-gray-700'}`}
-            >
-                <span>🇺🇸</span> EN
-            </button>
-            <button
-                onClick={() => changeLanguage('es')}
-                className={`px-2 py-1 text-sm rounded-md flex items-center gap-1 ${i18n.language.startsWith('es') ? 'bg-primary text-primary-foreground' : 'bg-gray-200 dark:bg-gray-700'}`}
-            >
-                <span>🇨🇴</span> ES
-            </button>
-        </div>
-    );
-};
-
 
 const App: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -113,14 +90,37 @@ const App: React.FC = () => {
   const ai = useMemo(() => new GoogleGenAI({ apiKey: process.env.API_KEY }), []);
   const aiChatSessions = useMemo(() => new Map<string, any>(), []);
 
-  const loginAs = useCallback((role: Role) => {
-    const userToLogin = users.find(u => u.role === role);
+  const login = useCallback(async (email: string, password: string): Promise<string | void> => {
+    const userToLogin = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
     if (userToLogin) {
       setCurrentUser(userToLogin);
     } else {
-        console.error(`Could not find a user with role: ${role}`);
+      return t('components.settingsView.passwordErrorCurrent'); // Reusing error message for invalid credentials
     }
-  }, [users]);
+  }, [users, t]);
+  
+  const register = useCallback(async (user: any): Promise<string | void> => {
+      const existingUser = users.find(u => u.email.toLowerCase() === user.email.toLowerCase());
+      if(existingUser) {
+          return "Email already exists.";
+      }
+      
+      const newUser: User = {
+          ...user,
+          id: `u${Date.now()}`,
+          joinDate: new Date().toISOString(),
+          membership: {
+              status: MembershipStatus.PENDING,
+              startDate: new Date().toISOString(),
+              endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
+              tierId: MOCK_TIERS[0].id
+          },
+          avatarUrl: `https://picsum.photos/seed/${Date.now()}/200`
+      };
+      
+      setUsers(prev => [...prev, newUser]);
+      setCurrentUser(newUser);
+  }, [users, setUsers]);
 
   const logout = useCallback(() => {
     setCurrentUser(null);
@@ -415,65 +415,23 @@ const App: React.FC = () => {
   const authContextValue = useMemo(() => ({
     currentUser, users, myClients, myTrainers, notifications, preEstablishedRoutines, payments, gymClasses, messages, announcements, challenges, achievements, equipment, incidents,
     logout, updateCurrentUser, updateUser, addUser, deleteUser, toggleBlockUser, markNotificationAsRead, markAllNotificationsAsRead, deleteNotification, addNotification, addRoutineTemplate, updateRoutineTemplate, deleteRoutineTemplate, logWorkout, addGymClass, updateGymClass, deleteGymClass, bookClass, sendMessage, markMessagesAsRead, addAnnouncement, updateAnnouncement, deleteAnnouncement,
-    sendAICoachMessage, addChallenge, updateChallenge, deleteChallenge, joinChallenge, unlockAchievement, addEquipment, updateEquipment, deleteEquipment, reportIncident, resolveIncident, toggleReportModal, addNutritionLog,
-    // FIX: Add dummy implementations for login and register to satisfy AuthContextType for the unused LoginScreen component.
-    login: async () => { console.warn('login not implemented')},
-    register: async () => { console.warn('register not implemented')},
+    sendAICoachMessage, addChallenge, updateChallenge, deleteChallenge, joinChallenge, unlockAchievement, addEquipment, updateEquipment, deleteEquipment, reportIncident, resolveIncident, toggleReportModal, addNutritionLog, login, register
   }), [
       currentUser, users, myClients, myTrainers, notifications, preEstablishedRoutines, payments, gymClasses, messages, announcements, challenges, achievements, equipment, incidents,
       logout, updateCurrentUser, updateUser, addUser, deleteUser, toggleBlockUser, markNotificationAsRead, markAllNotificationsAsRead, deleteNotification, addNotification, addRoutineTemplate, updateRoutineTemplate, deleteRoutineTemplate, logWorkout, addGymClass, updateGymClass, deleteGymClass, bookClass, sendMessage, markMessagesAsRead, addAnnouncement, updateAnnouncement, deleteAnnouncement,
-      sendAICoachMessage, addChallenge, updateChallenge, deleteChallenge, joinChallenge, unlockAchievement, addEquipment, updateEquipment, deleteEquipment, reportIncident, resolveIncident, toggleReportModal, addNutritionLog
+      sendAICoachMessage, addChallenge, updateChallenge, deleteChallenge, joinChallenge, unlockAchievement, addEquipment, updateEquipment, deleteEquipment, reportIncident, resolveIncident, toggleReportModal, addNutritionLog, login, register
   ]);
   
   const renderContent = () => {
     if (!currentUser) {
       return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800">
-          <div className="w-full max-w-md p-8 space-y-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm rounded-2xl shadow-2xl ring-1 ring-black/10 dark:ring-white/10">
-            <div className="absolute top-4 right-4">
-              <LanguageSwitcher />
-            </div>
-            <div className="text-center">
-              <LogoIcon className="w-16 h-16 mx-auto mb-4" />
-              <h1 className="text-4xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500 dark:from-blue-400 dark:to-teal-300">
-                {t('general.appName')}
-              </h1>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">
-                {t('login.subtitle')}
-              </p>
-            </div>
-            <div className="space-y-4">
-              <button onClick={() => loginAs(Role.ADMIN)} className="w-full flex justify-center px-4 py-3 text-lg font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition duration-300 ease-in-out transform hover:-translate-y-1">
-                {t('login.loginAs', { role: t('roles.ADMIN') })}
-              </button>
-              <button onClick={() => loginAs(Role.CLIENT)} className="w-full flex justify-center px-4 py-3 text-lg font-semibold text-white bg-teal-600 rounded-lg shadow-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-opacity-75 transition duration-300 ease-in-out transform hover:-translate-y-1">
-                {t('login.loginAs', { role: t('roles.CLIENT') })}
-              </button>
-              <button onClick={() => loginAs(Role.TRAINER)} className="w-full flex justify-center px-4 py-3 text-lg font-semibold text-white bg-purple-600 rounded-lg shadow-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-75 transition duration-300 ease-in-out transform hover:-translate-y-1">
-                {t('login.loginAs', { role: t('roles.TRAINER') })}
-              </button>
-            </div>
-            <div className="mt-6 pt-4 border-t border-gray-300 dark:border-gray-600">
-                <h3 className="text-center text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">{t('login.staffOperational')}</h3>
-                <div className="grid grid-cols-2 gap-2">
-                    <button onClick={() => loginAs(Role.RECEPTIONIST)} className="px-3 py-2 text-sm font-semibold text-white bg-gray-500 rounded-lg shadow hover:bg-gray-600 transition">{t('roles.RECEPTIONIST')}</button>
-                    <button onClick={() => loginAs(Role.GENERAL_MANAGER)} className="px-3 py-2 text-sm font-semibold text-white bg-gray-500 rounded-lg shadow hover:bg-gray-600 transition">{t('roles.GENERAL_MANAGER')}</button>
-                    <button onClick={() => loginAs(Role.GROUP_INSTRUCTOR)} className="col-span-2 px-3 py-2 text-sm font-semibold text-white bg-gray-500 rounded-lg shadow hover:bg-gray-600 transition">{t('roles.GROUP_INSTRUCTOR')}</button>
-                </div>
-            </div>
-            <div className="mt-4">
-                <h3 className="text-center text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">{t('login.staffHealth')}</h3>
-                <div className="grid grid-cols-2 gap-2">
-                    <button onClick={() => loginAs(Role.NUTRITIONIST)} className="px-3 py-2 text-sm font-semibold text-white bg-gray-500 rounded-lg shadow hover:bg-gray-600 transition">{t('roles.NUTRITIONIST')}</button>
-                    <button onClick={() => loginAs(Role.PHYSIOTHERAPIST)} className="px-3 py-2 text-sm font-semibold text-white bg-gray-500 rounded-lg shadow hover:bg-gray-600 transition">{t('roles.PHYSIOTHERAPIST')}</button>
-                </div>
-            </div>
-          </div>
-        </div>
+        <>
+            <LoginScreen />
+            <Footer />
+        </>
       );
     }
 
-    // FIX: Replaced JSX.Element with React.ReactElement to resolve "Cannot find namespace 'JSX'" error.
     const dashboards: { [key in Role]?: React.ReactElement } = {
         [Role.ADMIN]: <AdminDashboard />,
         [Role.CLIENT]: <ClientDashboard />,
@@ -488,7 +446,6 @@ const App: React.FC = () => {
     const dashboard = dashboards[currentUser.role];
     
     if (!dashboard) {
-        // Placeholder for any other roles not yet implemented
         return (
             <div className="flex flex-col min-h-screen">
                 <header className="p-4 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm flex justify-between items-center border-b border-black/10 dark:border-white/10">
@@ -511,22 +468,23 @@ const App: React.FC = () => {
                         <p className="mt-2 text-gray-600 dark:text-gray-400">{t('placeholders.dashboardInConstruction', { role: t(`roles.${currentUser.role}`).toLowerCase() })}</p>
                     </div>
                 </main>
+                <Footer />
             </div>
         )
     }
     
     return (
-      <>
+      <div className="flex flex-col min-h-screen">
         {dashboard}
         {isReportModalOpen && currentUser && <ReportIncidentModal reportedById={currentUser.id} onClose={() => setIsReportModalOpen(false)} />}
-      </>
+      </div>
     );
   };
 
   return (
     <ThemeProvider>
       <AuthContext.Provider value={authContextValue}>
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-sans transition-colors duration-300">
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-sans transition-colors duration-300 flex flex-col">
           {isLoading ? <SplashScreen /> : renderContent()}
         </div>
       </AuthContext.Provider>

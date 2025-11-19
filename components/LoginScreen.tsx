@@ -1,34 +1,50 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Role } from '../types';
+import { LogoIcon } from './icons/LogoIcon';
+import LanguageSwitcher from './LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 const LoginScreen: React.FC = () => {
+  const { t } = useTranslation();
   const { login, register } = useContext(AuthContext);
   const [isLoginView, setIsLoginView] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [role, setRole] = useState<Role.CLIENT | Role.TRAINER>(Role.CLIENT);
+  const [role, setRole] = useState<Role>(Role.CLIENT);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    let result: string | void;
+    setIsLoading(true);
 
-    if (isLoginView) {
-      result = await login(email, password);
-    } else {
-      if (!name || !email || !password) {
-        setError('All fields are required for registration.');
-        return;
+    // Simulate network delay for realism
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    try {
+      let result: string | void;
+      if (isLoginView) {
+        result = await login(email, password);
+      } else {
+        if (!name || !email || !password) {
+          setError('All fields are required for registration.');
+          setIsLoading(false);
+          return;
+        }
+        result = await register({ name, email, password, role });
       }
-      result = await register({ name, email, password, role });
-    }
 
-    if (result) {
-      setError(result);
+      if (result) {
+        setError(result);
+      }
+    } catch (err) {
+      setError("An unexpected error occurred.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -38,24 +54,36 @@ const LoginScreen: React.FC = () => {
     setEmail('');
     setPassword('');
     setName('');
+    setRole(Role.CLIENT);
+  }
+  
+  const fillDemoCredentials = (demoEmail: string, demoPass: string) => {
+      setEmail(demoEmail);
+      setPassword(demoPass);
+      setIsLoginView(true);
+      setError(null);
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 animate-fade-in">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm rounded-2xl shadow-2xl ring-1 ring-black/10 dark:ring-white/10 animate-slide-up">
+    <div className="flex items-center justify-center min-h-[calc(100vh-80px)] bg-gray-100 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 animate-fade-in p-4">
+      <div className="w-full max-w-md p-8 space-y-6 bg-white/70 dark:bg-gray-900/70 backdrop-blur-lg rounded-2xl shadow-2xl ring-1 ring-black/10 dark:ring-white/10 animate-slide-up">
+        <div className="flex justify-end">
+             <LanguageSwitcher />
+        </div>
         <div className="text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500 dark:from-blue-400 dark:to-teal-300">
-            {isLoginView ? 'Welcome Back' : 'Create Account'}
+          <LogoIcon className="w-16 h-16 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-teal-500 dark:from-blue-400 dark:to-teal-300">
+            {isLoginView ? t('general.appName') : t('login.loginAs', { role: '' }).replace('Log in as', 'Join')}
           </h1>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            {isLoginView ? 'Sign in to continue to GymPro Manager' : 'Join our community of fitness enthusiasts'}
+          <p className="mt-2 text-gray-600 dark:text-gray-400 text-sm">
+            {isLoginView ? t('login.subtitle') : 'Create your account to get started.'}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLoginView && (
             <div>
-              <label htmlFor="name" className="sr-only">Name</label>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('general.name')}</label>
               <input
                 id="name"
                 name="name"
@@ -63,13 +91,13 @@ const LoginScreen: React.FC = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required={!isLoginView}
-                className="w-full px-4 py-3 bg-gray-200/50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Full Name"
+                className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+                placeholder="John Doe"
               />
             </div>
           )}
           <div>
-            <label htmlFor="email" className="sr-only">Email address</label>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('general.email')}</label>
             <input
               id="email"
               name="email"
@@ -78,12 +106,12 @@ const LoginScreen: React.FC = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-gray-200/50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Email address"
+              className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+              placeholder="name@example.com"
             />
           </div>
           <div>
-            <label htmlFor="password" className="sr-only">Password</label>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
             <input
               id="password"
               name="password"
@@ -92,43 +120,81 @@ const LoginScreen: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-gray-200/50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Password"
+              className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:text-white"
+              placeholder="••••••••"
             />
           </div>
 
           {!isLoginView && (
-            <div className="flex items-center justify-around p-2 bg-gray-200/50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg">
-                <p className="text-gray-600 dark:text-gray-400 font-medium">I am a:</p>
-                <label className="flex items-center space-x-2 cursor-pointer">
-                    <input type="radio" name="role" value={Role.CLIENT} checked={role === Role.CLIENT} onChange={() => setRole(Role.CLIENT)} className="form-radio text-blue-500 bg-gray-300 dark:bg-gray-700 border-gray-400 dark:border-gray-600 focus:ring-blue-500" />
-                    <span className={role === Role.CLIENT ? 'text-blue-600 dark:text-blue-300' : 'text-gray-600 dark:text-gray-400'}>Client</span>
-                </label>
-                <label className="flex items-center space-x-2 cursor-pointer">
-                    <input type="radio" name="role" value={Role.TRAINER} checked={role === Role.TRAINER} onChange={() => setRole(Role.TRAINER)} className="form-radio text-purple-500 bg-gray-300 dark:bg-gray-700 border-gray-400 dark:border-gray-600 focus:ring-purple-500" />
-                    <span className={role === Role.TRAINER ? 'text-purple-600 dark:text-purple-300' : 'text-gray-600 dark:text-gray-400'}>Trainer</span>
-                </label>
-            </div>
+             <div className="space-y-2">
+                <p className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('general.role')}</p>
+                <div className="grid grid-cols-2 gap-2">
+                    {Object.values(Role).filter(r => r !== Role.ADMIN).map((r) => (
+                        <label key={r} className={`flex items-center justify-center px-3 py-2 border rounded-lg cursor-pointer transition-all text-xs font-semibold ${role === r ? 'bg-primary/10 border-primary text-primary' : 'border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>
+                            <input 
+                                type="radio" 
+                                name="role" 
+                                value={r} 
+                                checked={role === r} 
+                                onChange={() => setRole(r)} 
+                                className="hidden" 
+                            />
+                            <span className="capitalize">{t(`roles.${r}`)}</span>
+                        </label>
+                    ))}
+                </div>
+             </div>
           )}
 
-          {error && <p className="text-sm text-red-500 dark:text-red-400 text-center">{error}</p>}
+          {error && (
+            <div className="p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-sm rounded-lg text-center animate-pulse">
+                {error}
+            </div>
+          )}
 
           <div>
             <button
               type="submit"
-              className="w-full flex justify-center px-4 py-3 text-lg font-semibold text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75 transition duration-300 ease-in-out transform hover:-translate-y-1"
+              disabled={isLoading}
+              className="w-full flex justify-center px-4 py-2.5 text-lg font-semibold text-white bg-primary rounded-lg shadow-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-75 transition duration-300 ease-in-out transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {isLoginView ? 'Sign In' : 'Register'}
+              {isLoading ? (
+                <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : (
+                  isLoginView ? t('login.loginAs', {role: ''}).replace(' as ', '') : 'Create Account'
+              )}
             </button>
           </div>
         </form>
 
-        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-          {isLoginView ? "Don't have an account?" : "Already have an account?"}
-          <button onClick={toggleView} className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 ml-1">
-            {isLoginView ? 'Sign up' : 'Sign in'}
-          </button>
-        </p>
+        <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300 dark:border-gray-700"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-gray-50 dark:bg-gray-900 text-gray-500">
+                    {isLoginView ? "Don't have an account?" : "Already have an account?"}
+                    <button onClick={toggleView} className="font-bold text-primary hover:underline ml-1">
+                        {isLoginView ? 'Sign up' : 'Log in'}
+                    </button>
+                </span>
+            </div>
+        </div>
+        
+        {isLoginView && (
+            <div className="space-y-2">
+                <p className="text-xs text-center text-gray-400 uppercase tracking-wide">Demo Access</p>
+                <div className="flex flex-wrap justify-center gap-2">
+                    <button onClick={() => fillDemoCredentials('admin@gympro.com', 'password123')} className="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300">Admin</button>
+                    <button onClick={() => fillDemoCredentials('samantha.w@example.com', 'password123')} className="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300">Client</button>
+                    <button onClick={() => fillDemoCredentials('chris.v@gympro.com', 'password123')} className="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300">Trainer</button>
+                    <button onClick={() => fillDemoCredentials('reception@gympro.com', 'password123')} className="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300">Reception</button>
+                </div>
+            </div>
+        )}
 
       </div>
     </div>

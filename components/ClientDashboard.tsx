@@ -22,6 +22,7 @@ import NutritionLog from './client/NutritionLog';
 import { ChatBubbleLeftRightIcon } from './icons/ChatBubbleLeftRightIcon';
 import { ShareIcon } from './icons/ShareIcon';
 import ShareRoutineModal from './shared/ShareRoutineModal';
+import Footer from './Footer';
 
 type View = 'dashboard' | 'routine' | 'workout-log' | 'progress' | 'classes' | 'messages' | 'membership-card' | 'profile' | 'notifications' | 'settings' | 'ai-coach' | 'challenges' | 'achievements' | 'nutrition-log';
 
@@ -434,6 +435,7 @@ const ClientDashboard: React.FC = () => {
                     {renderContent()}
                 </div>
             </main>
+            <Footer />
         </div>
         {isEditModalOpen && <EditProfileModal user={currentUser} onSave={handleProfileSave} onClose={() => setIsEditModalOpen(false)} />}
         </div>

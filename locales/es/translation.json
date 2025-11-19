@@ -27,7 +27,10 @@
         "warning": "Advertencia",
         "info": "Información",
         "confirmDelete": "¿Estás seguro de que quieres eliminar esto? Esta acción no se puede deshacer.",
-        "unassigned": "Sin asignar"
+        "unassigned": "Sin asignar",
+        "justNow": "Justo ahora",
+        "messages": "Mensajes",
+        "emergencyContact": "Contacto de Emergencia"
     },
     "roles": {
         "ADMIN": "Administrador",
@@ -109,6 +112,7 @@
             "appearance": "Apariencia",
             "darkMode": "Modo Oscuro",
             "darkModeDesc": "Alterna entre los temas claro y oscuro.",
+            "languageDesc": "Cambia el idioma de la aplicación.",
             "theme": "Tema",
             "accountSecurity": "Seguridad de la Cuenta",
             "passwordSuccess": "¡Contraseña actualizada correctamente!",
@@ -291,7 +295,7 @@
             "memberSince": "Miembro desde",
             "expiresOn": "Vence el",
             "clientLoad": "Carga de clientes",
-            "clientsCount": "{{count}} clientes",
+            "clientsCount": "{{count}} clients",
             "assignedTrainers": "Entrenadores asignados",
             "none": "Ninguno",
             "phone": "Teléfono",
@@ -325,6 +329,7 @@
         }
     },
     "receptionist": {
+        "title": "Recepción GymPro",
         "checkIn": "Check-In de Miembros",
         "searchMember": "Buscar miembro...",
         "checkInSuccess": "¡Check-In exitoso para {{name}}!",
@@ -333,35 +338,74 @@
         "upcomingClasses": "Próximas Clases",
         "recentCheckIns": "Check-Ins Recientes",
         "memberStatus": "Estado del Miembro",
-        "checkedIn": "Check-In Realizado"
+        "checkedIn": "Check-In Realizado",
+        "noMembersFound": "No se encontraron miembros.",
+        "noClassesToday": "No hay clases hoy.",
+        "noCheckInsYet": "No hay check-ins todavía.",
+        "nav": {
+            "checkIn": "Check-In",
+            "members": "Miembros",
+            "classes": "Clases"
+        }
     },
     "manager": {
+        "title": "Panel de Gerencia",
         "overview": "Visión General",
         "staff": "Gestión de Personal",
         "revenue": "Ingresos",
         "mrr": "IMR",
         "activeMembers": "Miembros Activos",
         "unpaidDues": "Cuotas Pendientes",
-        "keyMetrics": "Métricas Clave"
+        "keyMetrics": "Métricas Clave",
+        "revenueTrend": "Tendencia de Ingresos",
+        "staffCount": "Cantidad de Personal",
+        "financials": "Finanzas",
+        "financialsPlaceholder": "Aquí irían los desgloses financieros detallados, P&G y reportes de nómina."
     },
     "instructor": {
+        "title": "Hub del Instructor",
         "myClasses": "Mis Clases",
         "attendees": "Asistentes",
-        "capacity": "Capacidad"
+        "capacity": "Capacidad",
+        "noSignups": "Sin inscripciones aún"
     },
     "nutritionist": {
+        "title": "NutriPro",
         "clients": "Clientes",
         "nutritionLogs": "Registros Nutricionales",
         "selectClient": "Selecciona un cliente para ver registros",
         "lastLog": "Último Registro",
-        "aiAnalysis": "Análisis IA"
+        "aiAnalysis": "Análisis IA",
+        "goals": "Metas",
+        "dietary": "Dieta",
+        "viewLogs": "Ver Registros",
+        "allClients": "Todos los Clientes",
+        "protein": "Proteína",
+        "carbs": "Carbohidratos",
+        "fat": "Grasa",
+        "noLogsYet": "No hay registros para este cliente aún.",
+        "nav": {
+            "clients": "Clientes",
+            "logs": "Registros"
+        }
     },
     "physio": {
+        "title": "FisioTrack",
         "patients": "Pacientes",
         "progressNotes": "Notas de Progreso",
         "selectPatient": "Selecciona un paciente para ver notas",
         "addNote": "Añadir Nota",
         "injuryStatus": "Estado de Lesión",
-        "treatmentPlan": "Plan de Tratamiento"
+        "treatmentPlan": "Plan de Tratamiento",
+        "noteAddedSuccess": "Nota de progreso añadida exitosamente.",
+        "medicalInfo": "Información Médica",
+        "conditions": "Condiciones Médicas / Lesiones",
+        "noneReported": "Ninguna reportada",
+        "noNotesYet": "No hay notas aún.",
+        "addNotePlaceholder": "Añadir nueva nota de progreso...",
+        "nav": {
+            "patients": "Pacientes",
+            "notes": "Notas"
+        }
     }
 }

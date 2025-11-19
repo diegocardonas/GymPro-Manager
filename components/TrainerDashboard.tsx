@@ -1,3 +1,4 @@
+
 import React, { useContext, useMemo, useState, useRef } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { User, Role, DailyRoutine, Exercise, FitnessLevel, PreEstablishedRoutine, WorkoutSession } from '../types';
@@ -106,8 +107,11 @@ const TrainerDashboard: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedClient, setSelectedClient] = useState<User | null>(null);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [activeView, setActiveView] = useState<View>('dashboard');
+
+    // Sidebar states
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile drawer
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // Desktop collapse
 
     const myClients = useMemo(() => clientsFromContext || [], [clientsFromContext]);
 
@@ -175,18 +179,26 @@ const TrainerDashboard: React.FC = () => {
                     setActiveView={setActiveView}
                     isOpen={isSidebarOpen}
                     onClose={() => setIsSidebarOpen(false)}
+                    isCollapsed={isSidebarCollapsed}
+                    toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                 />
+                {/* Mobile Overlay */}
                 {isSidebarOpen && <div onClick={() => setIsSidebarOpen(false)} className="fixed inset-0 bg-black/60 z-20 md:hidden" aria-hidden="true" />}
-                <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ml-0`}>
+
+                {/* Main Content - Adjusts margin based on sidebar state */}
+                <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
                     <header className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm sticky top-0 z-10 p-4 border-b border-black/10 dark:border-white/10">
                         <div className="container mx-auto flex justify-between items-center">
                             <div className="flex items-center space-x-4">
-                                <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" aria-label="Toggle sidebar">
+                                <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors md:hidden" aria-label="Toggle sidebar">
                                     <MenuIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
                                 </button>
                                 <h2 className="text-xl font-semibold capitalize text-gray-900 dark:text-white">{viewTitles[activeView]}</h2>
                             </div>
                             <div className="flex items-center space-x-4">
+                                <button onClick={() => setActiveView('messages')} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" aria-label="Mensajes">
+                                    <ChatBubbleLeftRightIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+                                </button>
                                 <NotificationBell 
                                     onViewAll={() => setActiveView('notifications')}
                                     onNotificationClick={(view) => setActiveView(view as View)}
@@ -210,13 +222,6 @@ const TrainerDashboard: React.FC = () => {
                     {isEditModalOpen && currentUser && <TrainerEditProfileModal user={currentUser} onSave={handleProfileSave} onClose={() => setIsEditModalOpen(false)} />}
                 </div>
             </div>
-            <button
-                onClick={() => setActiveView('messages')}
-                className="fixed bottom-24 right-6 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full p-4 shadow-lg transition-transform transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-75 z-40"
-                aria-label="Abrir mensajes"
-            >
-                <ChatBubbleLeftRightIcon className="w-6 h-6" />
-            </button>
         </>
     );
 };
@@ -357,10 +362,10 @@ const ManageClientModal: React.FC<{client: User; trainer: User; onSave: (client:
                         <XCircleIcon className="w-6 h-6 text-gray-500" />
                     </button>
                 </div>
-                <div className="border-b border-gray-200 dark:border-gray-700 px-6">
+                <div className="border-b border-gray-200 dark:border-gray-700 px-6 overflow-x-auto">
                     <nav className="-mb-px flex space-x-6">
-                        <button type="button" onClick={() => setActiveTab('routine')} className={`capitalize py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'routine' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'}`}>Rutina</button>
-                        <button type="button" onClick={() => setActiveTab('history')} className={`capitalize py-3 px-1 border-b-2 font-medium text-sm ${activeTab === 'history' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'}`}>Historial de Entrenamientos</button>
+                        <button type="button" onClick={() => setActiveTab('routine')} className={`capitalize py-3 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'routine' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'}`}>Rutina</button>
+                        <button type="button" onClick={() => setActiveTab('history')} className={`capitalize py-3 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${activeTab === 'history' ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'}`}>Historial de Entrenamientos</button>
                     </nav>
                 </div>
                 
@@ -579,7 +584,7 @@ const RoutineEditor: React.FC<{client: User; trainer: User; onSave: (client: Use
 
     return (
          <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
-             <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex flex-col sm:flex-row items-center gap-4">
+             <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex flex-col sm:flex-row items-center gap-4 flex-shrink-0">
                 <label htmlFor="routine-template" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex-shrink-0">Aplicar plantilla:</label>
                 <select
                     id="routine-template"
@@ -602,7 +607,7 @@ const RoutineEditor: React.FC<{client: User; trainer: User; onSave: (client: Use
                         </optgroup>
                     )}
                 </select>
-                 <span className="text-sm text-gray-500 dark:text-gray-400">o</span>
+                 <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:inline">o</span>
                 <button 
                     type="button" 
                     onClick={handleSuggestRoutine}
@@ -621,8 +626,8 @@ const RoutineEditor: React.FC<{client: User; trainer: User; onSave: (client: Use
                 </button>
             </div>
            <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-                <div className="p-4 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700">
-                     <nav className="flex flex-row overflow-x-auto -mx-2 md:flex-col md:mx-0 md:space-y-1">
+                <div className="p-4 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 overflow-x-auto md:overflow-y-auto flex-shrink-0">
+                     <nav className="flex flex-row md:flex-col space-x-2 md:space-x-0 md:space-y-1">
                         {weekDays.map(day => (
                             <button
                                 type="button"
@@ -639,7 +644,7 @@ const RoutineEditor: React.FC<{client: User; trainer: User; onSave: (client: Use
                      <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4">Rutina de {weekDaysSpanish[activeDay]}</h3>
                      <div className="space-y-3">
                         {activeDayRoutine && activeDayRoutine.exercises.length > 0 && (
-                            <div className="flex items-center gap-2">
+                            <div className="hidden sm:flex items-center gap-2">
                                 <div className="flex-grow text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ejercicio</div>
                                 <div className="w-28 flex-shrink-0 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Series</div>
                                 <div className="w-32 flex-shrink-0 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rep.</div>
@@ -647,22 +652,35 @@ const RoutineEditor: React.FC<{client: User; trainer: User; onSave: (client: Use
                             </div>
                         )}
                         {activeDayRoutine?.exercises.map((ex, exIndex) => (
-                            <div key={exIndex} className="flex items-center gap-2">
-                                <select 
-                                    value={ex.name}
-                                    onChange={(e) => handleExerciseChange(exIndex, 'name', e.target.value)}
-                                    className="flex-grow bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm p-2 focus:ring-primary focus:border-primary text-gray-900 dark:text-white"
-                                >
-                                    <option value="" disabled>Selecciona un ejercicio...</option>
-                                    {MOCK_EXERCISES.map(exerciseName => (
-                                        <option key={exerciseName} value={exerciseName}>{exerciseName}</option>
-                                    ))}
-                                </select>
-                                <NumberInputWithButtons value={ex.sets} onChange={(v) => handleExerciseChange(exIndex, 'sets', v as number)} className="w-28 flex-shrink-0" />
-                                <NumberInputWithButtons value={ex.reps} onChange={(v) => handleExerciseChange(exIndex, 'reps', v as string)} className="w-32 flex-shrink-0" />
-                                <button type="button" onClick={() => handleRemoveExercise(exIndex)} className="p-2 flex-shrink-0 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
-                                    <TrashIcon className="h-5 w-5" />
-                                </button>
+                            <div key={exIndex} className="flex flex-col sm:flex-row sm:items-center gap-2 bg-gray-50 dark:bg-gray-700/30 p-3 rounded-lg sm:p-0 sm:bg-transparent sm:dark:bg-transparent">
+                                <div className="flex-grow w-full sm:w-auto">
+                                    <label className="text-xs font-semibold text-gray-500 sm:hidden mb-1 block">Ejercicio</label>
+                                    <select 
+                                        value={ex.name}
+                                        onChange={(e) => handleExerciseChange(exIndex, 'name', e.target.value)}
+                                        className="w-full bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm p-2 focus:ring-primary focus:border-primary text-gray-900 dark:text-white"
+                                    >
+                                        <option value="" disabled>Selecciona un ejercicio...</option>
+                                        {MOCK_EXERCISES.map(exerciseName => (
+                                            <option key={exerciseName} value={exerciseName}>{exerciseName}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="flex items-center gap-2 justify-between sm:justify-start w-full sm:w-auto">
+                                    <div className="flex flex-col sm:block w-24 sm:w-28">
+                                        <label className="text-xs font-semibold text-gray-500 sm:hidden mb-1 block">Series</label>
+                                        <NumberInputWithButtons value={ex.sets} onChange={(v) => handleExerciseChange(exIndex, 'sets', v as number)} className="w-full" />
+                                    </div>
+                                    <div className="flex flex-col sm:block w-28 sm:w-32">
+                                        <label className="text-xs font-semibold text-gray-500 sm:hidden mb-1 block">Reps</label>
+                                        <NumberInputWithButtons value={ex.reps} onChange={(v) => handleExerciseChange(exIndex, 'reps', v as string)} className="w-full" />
+                                    </div>
+                                    <div className="sm:w-9 flex justify-end sm:justify-center mt-4 sm:mt-0">
+                                        <button type="button" onClick={() => handleRemoveExercise(exIndex)} className="p-2 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                                            <TrashIcon className="h-5 w-5" />
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         ))}
                      </div>
@@ -686,7 +704,7 @@ const RoutineEditor: React.FC<{client: User; trainer: User; onSave: (client: Use
                     </div>
                 </div>
            </div>
-            <div className="flex justify-end space-x-4 p-6 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50">
+            <div className="flex justify-end space-x-4 p-6 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50 sticky bottom-0">
                 <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg font-semibold transition-colors text-gray-800 dark:text-gray-200">Cancelar</button>
                 <button type="submit" disabled={isSuggesting} className="px-4 py-2 bg-primary hover:bg-primary/90 rounded-lg font-semibold transition-colors text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed">Guardar Cambios</button>
             </div>

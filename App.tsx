@@ -26,7 +26,6 @@ import PhysiotherapistDashboard from './components/PhysiotherapistDashboard';
 
 import { LogoIcon } from './components/icons/LogoIcon';
 import ReportIncidentModal from './components/shared/ReportIncidentModal';
-import { WrenchIcon } from './components/icons/WrenchIcon';
 // FIX: Correctly import GoogleGenAI and Type from @google/genai.
 import { GoogleGenAI, Type } from "@google/genai";
 import { LogoutIcon } from './components/icons/LogoutIcon';
@@ -347,6 +346,10 @@ const App: React.FC = () => {
     setIsReportModalOpen(false);
   }, [addNotification, setIncidents]);
   const resolveIncident = useCallback((id: string) => { setIncidents(prev => prev.map(i => i.id === id ? { ...i, isResolved: true } : i)); }, [setIncidents]);
+  
+  const toggleReportModal = useCallback(() => {
+    setIsReportModalOpen(prev => !prev);
+  }, []);
 
   // Nutrition Log Logic
   const addNutritionLog = useCallback(async (userId: string, log: Omit<NutritionLog, 'id'>) => {
@@ -412,14 +415,14 @@ const App: React.FC = () => {
   const authContextValue = useMemo(() => ({
     currentUser, users, myClients, myTrainers, notifications, preEstablishedRoutines, payments, gymClasses, messages, announcements, challenges, achievements, equipment, incidents,
     logout, updateCurrentUser, updateUser, addUser, deleteUser, toggleBlockUser, markNotificationAsRead, markAllNotificationsAsRead, deleteNotification, addNotification, addRoutineTemplate, updateRoutineTemplate, deleteRoutineTemplate, logWorkout, addGymClass, updateGymClass, deleteGymClass, bookClass, sendMessage, markMessagesAsRead, addAnnouncement, updateAnnouncement, deleteAnnouncement,
-    sendAICoachMessage, addChallenge, updateChallenge, deleteChallenge, joinChallenge, unlockAchievement, addEquipment, updateEquipment, deleteEquipment, reportIncident, resolveIncident, addNutritionLog,
+    sendAICoachMessage, addChallenge, updateChallenge, deleteChallenge, joinChallenge, unlockAchievement, addEquipment, updateEquipment, deleteEquipment, reportIncident, resolveIncident, toggleReportModal, addNutritionLog,
     // FIX: Add dummy implementations for login and register to satisfy AuthContextType for the unused LoginScreen component.
     login: async () => { console.warn('login not implemented')},
     register: async () => { console.warn('register not implemented')},
   }), [
       currentUser, users, myClients, myTrainers, notifications, preEstablishedRoutines, payments, gymClasses, messages, announcements, challenges, achievements, equipment, incidents,
       logout, updateCurrentUser, updateUser, addUser, deleteUser, toggleBlockUser, markNotificationAsRead, markAllNotificationsAsRead, deleteNotification, addNotification, addRoutineTemplate, updateRoutineTemplate, deleteRoutineTemplate, logWorkout, addGymClass, updateGymClass, deleteGymClass, bookClass, sendMessage, markMessagesAsRead, addAnnouncement, updateAnnouncement, deleteAnnouncement,
-      sendAICoachMessage, addChallenge, updateChallenge, deleteChallenge, joinChallenge, unlockAchievement, addEquipment, updateEquipment, deleteEquipment, reportIncident, resolveIncident, addNutritionLog
+      sendAICoachMessage, addChallenge, updateChallenge, deleteChallenge, joinChallenge, unlockAchievement, addEquipment, updateEquipment, deleteEquipment, reportIncident, resolveIncident, toggleReportModal, addNutritionLog
   ]);
   
   const renderContent = () => {
@@ -515,13 +518,6 @@ const App: React.FC = () => {
     return (
       <>
         {dashboard}
-        <button
-            onClick={() => setIsReportModalOpen(true)}
-            className="fixed bottom-6 right-6 bg-red-600 hover:bg-red-700 text-white rounded-full p-4 shadow-lg transition-transform transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-75 z-50"
-            aria-label={t('app.reportProblem')}
-        >
-            <WrenchIcon className="w-6 h-6" />
-        </button>
         {isReportModalOpen && currentUser && <ReportIncidentModal reportedById={currentUser.id} onClose={() => setIsReportModalOpen(false)} />}
       </>
     );

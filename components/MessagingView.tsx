@@ -10,6 +10,7 @@ import { FilterIcon } from './icons/FilterIcon';
 import { ChevronDownIcon } from './icons/ChevronDownIcon';
 import { ChevronUpIcon } from './icons/ChevronUpIcon';
 import { XCircleIcon } from './icons/XCircleIcon';
+import { useTranslation } from 'react-i18next';
 
 interface MessagingViewProps {
     preselectedContact?: User | null;
@@ -45,6 +46,7 @@ const roleColors: Record<Role, string> = {
 const staffRoles = [Role.ADMIN, Role.TRAINER, Role.RECEPTIONIST, Role.GENERAL_MANAGER, Role.GROUP_INSTRUCTOR, Role.NUTRITIONIST, Role.PHYSIOTHERAPIST];
 
 const MessagingView: React.FC<MessagingViewProps> = ({ preselectedContact, onPreselectConsumed }) => {
+    const { t } = useTranslation();
     const { currentUser, users, messages, sendMessage, markMessagesAsRead, toggleBlockUser, myClients, myTrainers } = useContext(AuthContext);
     
     const [selectedContact, setSelectedContact] = useState<User | null>(preselectedContact || (users.length > 0 && window.innerWidth >= 768 ? users[1] : null));
@@ -76,7 +78,6 @@ const MessagingView: React.FC<MessagingViewProps> = ({ preselectedContact, onPre
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // FIX: Added explicit type annotation to useMemo to resolve incorrect type inference issues downstream.
     const allContactsWithDetails = useMemo<(User & { lastMessage: Message | undefined; unreadCount: number; })[]>(() => {
         if (!currentUser) return [];
 
@@ -105,17 +106,17 @@ const MessagingView: React.FC<MessagingViewProps> = ({ preselectedContact, onPre
 
         const sections: { [key: string]: typeof sortedContacts } = {};
         
-        const mainContactSectionTitle = currentUser.role === Role.CLIENT ? "My Trainers" : "My Clients";
+        const mainContactSectionTitle = currentUser.role === Role.CLIENT ? t('components.messagingView.myTrainers') : t('components.messagingView.myClients');
         const mainContacts = currentUser.role === Role.CLIENT ? myTrainers : myClients;
         const mainContactIds = mainContacts?.map(c => c.id) || [];
         
         sections[mainContactSectionTitle] = sortedContacts.filter(u => mainContactIds.includes(u.id));
-        sections["Staff"] = sortedContacts.filter(u => staffRoles.includes(u.role) && !mainContactIds.includes(u.id));
-        sections["Clients"] = sortedContacts.filter(u => u.role === Role.CLIENT && !mainContactIds.includes(u.id));
+        sections[t('components.messagingView.staff')] = sortedContacts.filter(u => staffRoles.includes(u.role) && !mainContactIds.includes(u.id));
+        sections[t('components.messagingView.clients')] = sortedContacts.filter(u => u.role === Role.CLIENT && !mainContactIds.includes(u.id));
 
         return Object.fromEntries(Object.entries(sections).filter(([_, users]) => users.length > 0));
 
-    }, [currentUser, allContactsWithDetails, myClients, myTrainers]);
+    }, [currentUser, allContactsWithDetails, myClients, myTrainers, t]);
     
     const activeChats = useMemo(() => {
         return allContactsWithDetails
@@ -170,8 +171,8 @@ const MessagingView: React.FC<MessagingViewProps> = ({ preselectedContact, onPre
     const handleBlockToggle = () => {
         if (!selectedContact) return;
         const isBlocked = currentUser?.blockedUserIds?.includes(selectedContact.id);
-        const action = isBlocked ? 'unblock' : 'block';
-        if (window.confirm(`Are you sure you want to ${action} ${selectedContact.name}?`)) {
+        const actionKey = isBlocked ? 'confirmUnblock' : 'confirmBlock';
+        if (window.confirm(t(`components.messagingView.${actionKey}`, { name: selectedContact.name }))) {
             toggleBlockUser(selectedContact.id);
             setIsOptionsOpen(false);
             if (!isBlocked) {
@@ -186,13 +187,18 @@ const MessagingView: React.FC<MessagingViewProps> = ({ preselectedContact, onPre
         conversationMessages.forEach(msg => {
             const msgDate = new Date(msg.timestamp).toLocaleDateString();
             if (msgDate !== lastDate) {
-                result.push({ type: 'divider', date: formatDateDivider(msg.timestamp), id: `divider-${msg.timestamp}` });
+                const rawLabel = formatDateDivider(msg.timestamp);
+                // Translate "TODAY" or "YESTERDAY" if returned, otherwise use date string
+                const label = rawLabel === 'TODAY' ? t('components.messagingView.today') : 
+                              rawLabel === 'YESTERDAY' ? t('components.messagingView.yesterday') : rawLabel;
+                
+                result.push({ type: 'divider', date: label, id: `divider-${msg.timestamp}` });
                 lastDate = msgDate;
             }
             result.push(msg);
         });
         return result;
-    }, [conversationMessages]);
+    }, [conversationMessages, t]);
 
     const toggleSection = (sectionName: string) => {
         setCollapsedSections(prev => 
@@ -217,7 +223,7 @@ const MessagingView: React.FC<MessagingViewProps> = ({ preselectedContact, onPre
                 </div>
                  <span className={`px-2 py-0.5 text-xs font-semibold rounded-full ${roleColors[contact.role]}`}>{contact.role.charAt(0).toUpperCase() + contact.role.slice(1).toLowerCase().replace(/_/g, ' ')}</span>
                 <div className="flex justify-between items-center mt-1">
-                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{contact.lastMessage?.text || 'No messages yet'}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{contact.lastMessage?.text || t('components.messagingView.noActiveChats')}</p>
                     {contact.unreadCount > 0 && (
                         <span className="ml-2 flex-shrink-0 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">{contact.unreadCount}</span>
                     )}
@@ -227,18 +233,18 @@ const MessagingView: React.FC<MessagingViewProps> = ({ preselectedContact, onPre
     );
 
     return (
-        <div className="w-full max-w-6xl h-[80vh] bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg ring-1 ring-black/5 dark:ring-white/10 flex overflow-hidden">
+        <div className="w-full max-w-6xl h-[calc(100dvh-140px)] md:h-[80vh] bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg ring-1 ring-black/5 dark:ring-white/10 flex overflow-hidden">
             {/* Contacts List */}
-            <div className={`w-full md:w-1/3 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-gray-50/50 dark:bg-gray-900/50 ${selectedContact && 'hidden md:flex'}`}>
+            <div className={`w-full md:w-1/3 border-r border-gray-200 dark:border-gray-700 flex flex-col bg-gray-50/50 dark:bg-gray-900/50 ${selectedContact ? 'hidden md:flex' : 'flex'}`}>
                 <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">Community Chat</h2>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('components.messagingView.title')}</h2>
                     <div className="relative mt-2">
                         <input
                             type="text"
-                            placeholder="Search users..."
+                            placeholder={t('components.messagingView.search')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full p-2 pl-4 pr-10 bg-gray-200 dark:bg-gray-700 rounded-lg border-transparent focus:ring-2 focus:ring-primary"
+                            className="w-full p-2 pl-4 pr-10 bg-gray-200 dark:bg-gray-700 rounded-lg border-transparent focus:ring-2 focus:ring-primary text-gray-900 dark:text-white"
                         />
                         <button onClick={() => setIsFilterModalOpen(true)} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600">
                             <FilterIcon className="w-5 h-5" />
@@ -248,7 +254,7 @@ const MessagingView: React.FC<MessagingViewProps> = ({ preselectedContact, onPre
                 
                 <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
                     <label htmlFor="active-chats-toggle" className="flex items-center cursor-pointer">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-3">Show active chats only</span>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-3">{t('components.messagingView.showActiveChats')}</span>
                         <div className="relative">
                             <input type="checkbox" id="active-chats-toggle" className="sr-only peer" checked={showActiveChatsOnly} onChange={() => setShowActiveChatsOnly(!showActiveChatsOnly)} />
                             <div className="w-11 h-6 bg-gray-300 dark:bg-gray-600 rounded-full peer peer-checked:bg-primary"></div>
@@ -262,10 +268,9 @@ const MessagingView: React.FC<MessagingViewProps> = ({ preselectedContact, onPre
                          activeChats.length > 0 ? (
                             activeChats.map(contact => renderContact(contact as ContactWithDetails))
                         ) : (
-                            <p className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">No active chats found.</p>
+                            <p className="p-4 text-center text-sm text-gray-500 dark:text-gray-400">{t('components.messagingView.noActiveChats')}</p>
                         )
                     ) : (
-                        // FIX: Explicitly typing `contacts` as an array of `ContactWithDetails` to resolve type inference issue with Object.entries.
                         Object.entries(contactsBySection).map(([sectionName, contacts]: [string, ContactWithDetails[]]) => (
                             <div key={sectionName}>
                                 <button onClick={() => toggleSection(sectionName)} className="w-full flex justify-between items-center p-2 px-3 bg-gray-200/50 dark:bg-gray-800/50 sticky top-0 z-10">
@@ -302,7 +307,7 @@ const MessagingView: React.FC<MessagingViewProps> = ({ preselectedContact, onPre
                                     <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-10">
                                         <button onClick={handleBlockToggle} className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
                                             <BlockIcon className="w-5 h-5"/>
-                                            <span>{currentUser?.blockedUserIds?.includes(selectedContact.id) ? 'Unblock' : 'Block'} Contact</span>
+                                            <span>{currentUser?.blockedUserIds?.includes(selectedContact.id) ? t('components.messagingView.unblock') : t('components.messagingView.block')}</span>
                                         </button>
                                     </div>
                                 )}
@@ -310,7 +315,6 @@ const MessagingView: React.FC<MessagingViewProps> = ({ preselectedContact, onPre
                         </div>
                         <div className="flex-1 p-6 overflow-y-auto space-y-2">
                             {messagesWithDividers.map(item => {
-                                // FIX: Use a type guard to correctly handle the union type of Message and the date divider.
                                 if ('type' in item && item.type === 'divider') {
                                     return (
                                         <div key={item.id} className="flex justify-center my-4">
@@ -318,7 +322,7 @@ const MessagingView: React.FC<MessagingViewProps> = ({ preselectedContact, onPre
                                         </div>
                                     )
                                 }
-                                const msg = item;
+                                const msg = item as Message;
                                 const isSentByMe = msg.senderId === currentUser?.id;
                                 return (
                                     <div key={msg.id} className={`flex items-end gap-2 ${isSentByMe ? 'justify-end' : 'justify-start'}`}>
@@ -344,7 +348,7 @@ const MessagingView: React.FC<MessagingViewProps> = ({ preselectedContact, onPre
                                     type="text"
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
-                                    placeholder={`Message ${selectedContact.name}...`}
+                                    placeholder={t('components.messagingView.messagePlaceholder', { name: selectedContact.name })}
                                     className="flex-grow p-3 bg-transparent border-none focus:ring-0 text-gray-900 dark:text-white"
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' && !e.shiftKey) {
@@ -366,20 +370,20 @@ const MessagingView: React.FC<MessagingViewProps> = ({ preselectedContact, onPre
                     </>
                 ) : (
                     <div className="flex-1 items-center justify-center text-center text-gray-500 dark:text-gray-400 hidden md:flex">
-                        <p>Select a contact to start messaging.</p>
+                        <p>{t('components.messagingView.startMessaging')}</p>
                     </div>
                 )}
             </div>
              {isFilterModalOpen && (
                 <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm animate-scale-in">
                         <div className="p-4 flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
-                             <h3 className="text-lg font-bold">Filter by Role</h3>
+                             <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t('components.messagingView.filterByRole')}</h3>
                              <button onClick={() => setIsFilterModalOpen(false)}><XCircleIcon className="w-6 h-6 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"/></button>
                         </div>
-                        <div className="p-4 grid grid-cols-2 gap-2">
+                        <div className="p-4 grid grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto">
                             {Object.values(Role).map(role => (
-                                <label key={role} className="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <label key={role} className="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                                     <input
                                         type="checkbox"
                                         checked={selectedRoles.includes(role)}
@@ -392,13 +396,13 @@ const MessagingView: React.FC<MessagingViewProps> = ({ preselectedContact, onPre
                                         }}
                                         className="form-checkbox h-4 w-4 rounded text-primary focus:ring-primary"
                                     />
-                                    <span className="text-sm capitalize">{role.toLowerCase().replace(/_/g, ' ')}</span>
+                                    <span className="text-sm capitalize text-gray-700 dark:text-gray-200">{role.toLowerCase().replace(/_/g, ' ')}</span>
                                 </label>
                             ))}
                         </div>
                          <div className="p-4 flex justify-end gap-2 border-t border-gray-200 dark:border-gray-700">
-                             <button onClick={() => { setSelectedRoles([]); setIsFilterModalOpen(false); }} className="px-4 py-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg font-semibold text-sm">Clear</button>
-                             <button onClick={() => setIsFilterModalOpen(false)} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-semibold text-sm">Apply</button>
+                             <button onClick={() => { setSelectedRoles([]); setIsFilterModalOpen(false); }} className="px-4 py-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 rounded-lg font-semibold text-sm text-gray-800 dark:text-white">{t('components.messagingView.clear')}</button>
+                             <button onClick={() => setIsFilterModalOpen(false)} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg font-semibold text-sm">{t('components.messagingView.apply')}</button>
                         </div>
                     </div>
                 </div>

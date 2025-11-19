@@ -1,8 +1,11 @@
+
 import React, { useState, useContext, useCallback } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { User, Visibility } from '../types';
 import { ThemeContext } from '../context/ThemeContext';
 import { themes } from '../themes';
+import LanguageSwitcher from './LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 // Reusable toggle component
 const SettingToggle: React.FC<{ id: string, label: string, description: string, enabled: boolean, onToggle: () => void }> = ({ id, label, description, enabled, onToggle }) => (
@@ -37,6 +40,7 @@ const SettingSection: React.FC<{ title: string; children: React.ReactNode; dange
 
 
 const SettingsView: React.FC = () => {
+    const { t } = useTranslation();
     const { currentUser, updateCurrentUser, logout, users, toggleBlockUser } = useContext(AuthContext)!;
     const { theme, setThemeByName, isDarkMode, toggleDarkMode } = useContext(ThemeContext)!;
     const [currentPassword, setCurrentPassword] = useState('');
@@ -122,27 +126,39 @@ const SettingsView: React.FC = () => {
 
     return (
         <div className="w-full max-w-3xl bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg ring-1 ring-black/5 dark:ring-white/10 p-6 md:p-8 space-y-8">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Ajustes</h2>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{t('components.settingsView.title')}</h2>
             
-            <SettingSection title="Apariencia">
-                <div className="flex items-center justify-between mb-6">
+            <SettingSection title={t('components.settingsView.appearance')}>
+                <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-600">
+                    <div className="pr-4">
+                        <label className="font-medium text-gray-700 dark:text-gray-300">
+                            {t('components.languageSwitcher.language')}
+                        </label>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">
+                            {t('components.settingsView.languageDesc')}
+                        </p>
+                    </div>
+                    <LanguageSwitcher />
+                </div>
+
+                <div className="flex items-center justify-between my-6">
                     <label htmlFor="darkModeToggle" className="font-medium text-gray-700 dark:text-gray-300">
-                        Modo Oscuro
-                        <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">Alterna entre los temas claro y oscuro.</p>
+                        {t('components.settingsView.darkMode')}
+                        <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">{t('components.settingsView.darkModeDesc')}</p>
                     </label>
                     <button
                         id="darkModeToggle"
                         onClick={toggleDarkMode}
                         className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-800 focus:ring-primary ${isDarkMode ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'}`}
                     >
-                        <span className="sr-only">Activar modo oscuro</span>
+                        <span className="sr-only">{t('components.settingsView.darkMode')}</span>
                         <span
                             className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform duration-300 ${isDarkMode ? 'translate-x-6' : 'translate-x-1'}`}
                         />
                     </button>
                 </div>
                  <div>
-                    <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-3">Tema</h4>
+                    <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-3">{t('components.settingsView.theme')}</h4>
                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                         {themes.map((t) => (
                             <button
@@ -160,7 +176,7 @@ const SettingsView: React.FC = () => {
                 </div>
             </SettingSection>
 
-            <SettingSection title="Seguridad de la Cuenta">
+            <SettingSection title={t('components.settingsView.accountSecurity')}>
                 <form onSubmit={handlePasswordChange} className="space-y-4">
                     {message && (
                         <div className={`p-3 rounded-md text-sm ${message.type === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200'}`}>
@@ -168,82 +184,82 @@ const SettingsView: React.FC = () => {
                         </div>
                     )}
                     <div>
-                        <label htmlFor="currentPassword" className="block text-sm font-medium">Contraseña Actual</label>
+                        <label htmlFor="currentPassword" className="block text-sm font-medium">{t('components.settingsView.currentPassword')}</label>
                         <input type="password" id="currentPassword" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="mt-1 block w-full input-style" required />
                     </div>
                     <div>
-                        <label htmlFor="newPassword" className="block text-sm font-medium">Nueva Contraseña</label>
+                        <label htmlFor="newPassword" className="block text-sm font-medium">{t('components.settingsView.newPassword')}</label>
                         <input type="password" id="newPassword" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="mt-1 block w-full input-style" required />
                     </div>
                     <div>
-                        <label htmlFor="confirmPassword" className="block text-sm font-medium">Confirmar Nueva Contraseña</label>
+                        <label htmlFor="confirmPassword" className="block text-sm font-medium">{t('components.settingsView.confirmNewPassword')}</label>
                         <input type="password" id="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="mt-1 block w-full input-style" required />
                     </div>
                     <div className="flex justify-end">
                         <button type="submit" className="btn btn-primary">
-                            Cambiar Contraseña
+                            {t('components.settingsView.changePassword')}
                         </button>
                     </div>
                 </form>
             </SettingSection>
 
-             <SettingSection title="Privacidad y Notificaciones">
-                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Ajustes de Privacidad</h4>
+             <SettingSection title={t('components.settingsView.privacyNotifications')}>
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">{t('components.settingsView.privacySettings')}</h4>
                 <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-600">
                     <div>
-                        <label className="font-medium text-gray-700 dark:text-gray-300">Visibilidad del Perfil</label>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">Controla quién puede ver tu perfil.</p>
+                        <label className="font-medium text-gray-700 dark:text-gray-300">{t('components.settingsView.profileVisibility')}</label>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">{t('components.settingsView.profileVisibilityDesc')}</p>
                     </div>
                     <select 
                         value={currentUser?.privacySettings?.profileVisibility || 'everyone'}
                         onChange={(e) => handlePrivacyChange('profileVisibility', e.target.value as Visibility)}
                         className="input-style"
                     >
-                        <option value="everyone">Todos</option>
-                        <option value="connections">Conexiones</option>
-                        <option value="me">Solo yo</option>
+                        <option value="everyone">{t('components.settingsView.privacyOptions.everyone')}</option>
+                        <option value="connections">{t('components.settingsView.privacyOptions.connections')}</option>
+                        <option value="me">{t('components.settingsView.privacyOptions.me')}</option>
                     </select>
                 </div>
                 <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-600">
                     <div>
-                        <label className="font-medium text-gray-700 dark:text-gray-300">Visibilidad de la Actividad</label>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">Controla quién puede ver tu actividad de entrenamiento.</p>
+                        <label className="font-medium text-gray-700 dark:text-gray-300">{t('components.settingsView.activityVisibility')}</label>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 font-normal">{t('components.settingsView.activityVisibilityDesc')}</p>
                     </div>
                     <select 
                         value={currentUser?.privacySettings?.activityVisibility || 'connections'}
                         onChange={(e) => handlePrivacyChange('activityVisibility', e.target.value as Visibility)}
                         className="input-style"
                     >
-                        <option value="everyone">Todos</option>
-                        <option value="connections">Conexiones</option>
-                        <option value="me">Solo yo</option>
+                        <option value="everyone">{t('components.settingsView.privacyOptions.everyone')}</option>
+                        <option value="connections">{t('components.settingsView.privacyOptions.connections')}</option>
+                        <option value="me">{t('components.settingsView.privacyOptions.me')}</option>
                     </select>
                 </div>
                 <SettingToggle
                     id="showInSearch"
-                    label="Aparecer en Búsquedas"
-                    description="Permite que otros usuarios te encuentren al buscar."
+                    label={t('components.settingsView.showInSearch')}
+                    description={t('components.settingsView.showInSearchDesc')}
                     enabled={currentUser?.privacySettings?.showInSearch ?? true}
                     onToggle={() => handlePrivacyChange('showInSearch', !(currentUser?.privacySettings?.showInSearch ?? true))}
                 />
 
-                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mt-6 mb-2 border-t border-gray-200 dark:border-gray-600 pt-6">Preferencias de Notificación</h4>
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mt-6 mb-2 border-t border-gray-200 dark:border-gray-600 pt-6">{t('components.settingsView.notificationPreferences')}</h4>
                  <SettingToggle
                     id="newMessages"
-                    label="Nuevos Mensajes"
-                    description="Recibir notificaciones de nuevos mensajes directos."
+                    label={t('components.settingsView.newMessages')}
+                    description={t('components.settingsView.newMessagesDesc')}
                     enabled={currentUser?.notificationPreferences?.newMessages ?? true}
                     onToggle={() => handleNotificationToggle('newMessages')}
                 />
                 <SettingToggle
                     id="routineUpdates"
-                    label="Actualizaciones de Rutina"
-                    description="Recibir avisos cuando un entrenador actualice tu rutina."
+                    label={t('components.settingsView.routineUpdates')}
+                    description={t('components.settingsView.routineUpdatesDesc')}
                     enabled={currentUser?.notificationPreferences?.routineUpdates ?? true}
                     onToggle={() => handleNotificationToggle('routineUpdates')}
                 />
 
-                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mt-6 mb-2 border-t border-gray-200 dark:border-gray-600 pt-6">Usuarios Bloqueados</h4>
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mt-6 mb-2 border-t border-gray-200 dark:border-gray-600 pt-6">{t('components.settingsView.blockedUsers')}</h4>
                 {blockedUsers.length > 0 ? (
                     <div className="space-y-2">
                         {blockedUsers.map(user => (
@@ -256,24 +272,24 @@ const SettingsView: React.FC = () => {
                                     onClick={() => toggleBlockUser(user.id)}
                                     className="px-3 py-1 text-xs font-semibold bg-gray-300 dark:bg-gray-600 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500"
                                 >
-                                    Desbloquear
+                                    {t('components.settingsView.unblock')}
                                 </button>
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">No tienes ningún usuario bloqueado.</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{t('components.settingsView.noBlockedUsers')}</p>
                 )}
             </SettingSection>
 
-            <SettingSection title="Zona de Peligro" danger>
+            <SettingSection title={t('components.settingsView.dangerZone')} danger>
                 <div className="flex items-center justify-between">
                     <div>
-                        <h4 className="font-medium text-red-800 dark:text-red-200">Desactivar Cuenta</h4>
-                        <p className="text-sm text-red-600 dark:text-red-400">Esta acción es permanente y no se puede deshacer.</p>
+                        <h4 className="font-medium text-red-800 dark:text-red-200">{t('components.settingsView.deactivateAccount')}</h4>
+                        <p className="text-sm text-red-600 dark:text-red-400">{t('components.settingsView.deactivateAccountDesc')}</p>
                     </div>
                     <button type="button" onClick={handleDeactivate} className="btn btn-danger">
-                        Desactivar
+                        {t('components.settingsView.deactivate')}
                     </button>
                 </div>
             </SettingSection>

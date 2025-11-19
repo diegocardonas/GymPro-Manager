@@ -1,3 +1,4 @@
+
 // FIX: Imported `useMemo` to resolve 'Cannot find name' errors.
 import React, { useState, useContext, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -36,7 +37,11 @@ const AdminDashboard: React.FC = () => {
     const [activeView, setActiveView] = useState<View>('dashboard');
     const [filter, setFilter] = useState<DashboardFilter>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    
+    // Sidebar states
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile drawer
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // Desktop collapse
+
     const [viewingUser, setViewingUser] = useState<User | null>(null);
 
     const handleNavigation = (view: any, newFilter: DashboardFilter = null) => {
@@ -110,13 +115,19 @@ const AdminDashboard: React.FC = () => {
                 setActiveView={setActiveView}
                 isOpen={isSidebarOpen}
                 onClose={() => setIsSidebarOpen(false)}
+                isCollapsed={isSidebarCollapsed}
+                toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             />
+             {/* Mobile Overlay */}
              {isSidebarOpen && <div onClick={() => setIsSidebarOpen(false)} className="fixed inset-0 bg-black/60 z-20 md:hidden" aria-hidden="true" />}
-            <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ml-0`}>
+            
+            {/* Main Content - Adjusts margin based on sidebar state */}
+            <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
                 <header className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm sticky top-0 z-20 p-4 border-b border-black/10 dark:border-white/10">
                     <div className="container mx-auto flex justify-between items-center">
                         <div className="flex items-center space-x-4">
-                             <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" aria-label="Toggle sidebar">
+                            {/* Hamburger Menu - Mobile Only */}
+                             <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors md:hidden" aria-label="Toggle sidebar">
                                 <MenuIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
                             </button>
                             <h2 className="text-xl font-semibold capitalize text-gray-900 dark:text-white">{viewTitles[activeView]}</h2>

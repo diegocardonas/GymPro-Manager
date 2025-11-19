@@ -77,20 +77,24 @@ const WorkoutLog: React.FC = () => {
                         
                         <div className="space-y-2">
                             {exercise.completedSets.map((set, setIndex) => (
-                                <div key={setIndex} className="flex items-center gap-2">
-                                    <span className="font-semibold text-gray-600 dark:text-gray-400 w-12">Serie {setIndex + 1}</span>
-                                    <NumberInputWithButtons 
-                                        value={set.weight} 
-                                        onChange={(v) => handleSetChange(exIndex, setIndex, 'weight', v as number)} 
-                                        step={2.5} 
-                                        className="flex-1" />
-                                     <span className="text-gray-500 dark:text-gray-400">kg</span>
-                                    <NumberInputWithButtons 
-                                        value={set.reps} 
-                                        onChange={(v) => handleSetChange(exIndex, setIndex, 'reps', v as number)} 
-                                        className="flex-1" />
-                                    <span className="text-gray-500 dark:text-gray-400">reps</span>
-                                    <button onClick={() => handleRemoveSet(exIndex, setIndex)} className="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-full">
+                                <div key={setIndex} className="flex flex-wrap sm:flex-nowrap items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700/30 rounded-md">
+                                    <span className="font-semibold text-gray-600 dark:text-gray-400 w-full sm:w-12 text-sm sm:text-base">Serie {setIndex + 1}</span>
+                                    <div className="flex items-center gap-2 flex-1">
+                                        <NumberInputWithButtons 
+                                            value={set.weight} 
+                                            onChange={(v) => handleSetChange(exIndex, setIndex, 'weight', v as number)} 
+                                            step={2.5} 
+                                            className="w-full" />
+                                         <span className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">kg</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 flex-1">
+                                        <NumberInputWithButtons 
+                                            value={set.reps} 
+                                            onChange={(v) => handleSetChange(exIndex, setIndex, 'reps', v as number)} 
+                                            className="w-full" />
+                                        <span className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">reps</span>
+                                    </div>
+                                    <button onClick={() => handleRemoveSet(exIndex, setIndex)} className="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-full ml-auto sm:ml-0">
                                         <TrashIcon className="w-4 h-4" />
                                     </button>
                                 </div>

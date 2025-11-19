@@ -37,7 +37,7 @@ const PhysiotherapistDashboard: React.FC = () => {
         updateUser(updatedPatient);
         setSelectedPatient(updatedPatient);
         setNewNote('');
-        alert('Progress note added successfully.');
+        alert(t('physio.noteAddedSuccess'));
     };
 
     const renderContent = () => {
@@ -57,7 +57,7 @@ const PhysiotherapistDashboard: React.FC = () => {
                                         </div>
                                     </div>
                                     <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                                        <p><strong>Conditions:</strong> {patient.medicalConditions || 'None reported'}</p>
+                                        <p><strong>{t('physio.conditions')}:</strong> {patient.medicalConditions || t('physio.noneReported')}</p>
                                     </div>
                                     <button 
                                         onClick={() => { setSelectedPatient(patient); setActiveView('notes'); }}
@@ -74,31 +74,31 @@ const PhysiotherapistDashboard: React.FC = () => {
                 return (
                     <div className="space-y-6 animate-fade-in">
                          <div className="flex items-center space-x-2">
-                             <button onClick={() => setSelectedPatient(null)} className="text-sm text-gray-500 hover:text-primary underline">All Patients</button>
+                             <button onClick={() => setSelectedPatient(null)} className="text-sm text-gray-500 hover:text-primary underline">{t('nutritionist.allClients')}</button>
                              <span>/</span>
                              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                {selectedPatient ? `${selectedPatient.name}'s Recovery` : t('physio.progressNotes')}
+                                {selectedPatient ? `${selectedPatient.name}` : t('physio.progressNotes')}
                             </h2>
                         </div>
 
                         {selectedPatient ? (
                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                 <div className="bg-white dark:bg-gray-800/50 p-6 rounded-xl shadow-lg">
-                                    <h3 className="text-xl font-bold mb-4">Medical Information</h3>
+                                    <h3 className="text-xl font-bold mb-4">{t('physio.medicalInfo')}</h3>
                                     <div className="space-y-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-500">Medical Conditions / Injuries</label>
-                                            <p className="p-3 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-lg mt-1">{selectedPatient.medicalConditions || 'None reported'}</p>
+                                            <label className="block text-sm font-medium text-gray-500">{t('physio.conditions')}</label>
+                                            <p className="p-3 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-lg mt-1">{selectedPatient.medicalConditions || t('physio.noneReported')}</p>
                                         </div>
                                          <div>
-                                            <label className="block text-sm font-medium text-gray-500">Emergency Contact</label>
+                                            <label className="block text-sm font-medium text-gray-500">{t('general.emergencyContact')}</label>
                                             <p className="mt-1">{selectedPatient.emergencyContact?.name} - {selectedPatient.emergencyContact?.phone}</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="bg-white dark:bg-gray-800/50 p-6 rounded-xl shadow-lg flex flex-col h-[600px]">
-                                    <h3 className="text-xl font-bold mb-4">Progress Notes</h3>
+                                    <h3 className="text-xl font-bold mb-4">{t('physio.progressNotes')}</h3>
                                     
                                     <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
                                         {selectedPatient.progressNotes && selectedPatient.progressNotes.length > 0 ? (
@@ -108,7 +108,7 @@ const PhysiotherapistDashboard: React.FC = () => {
                                                     <p>{note.note}</p>
                                                 </div>
                                             ))
-                                        ) : <p className="text-gray-500 text-center py-4">No notes yet.</p>}
+                                        ) : <p className="text-gray-500 text-center py-4">{t('physio.noNotesYet')}</p>}
                                     </div>
 
                                     <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -119,7 +119,7 @@ const PhysiotherapistDashboard: React.FC = () => {
                                                 value={newNote}
                                                 onChange={(e) => setNewNote(e.target.value)}
                                                 className="flex-1 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
-                                                placeholder="Add a new progress note..."
+                                                placeholder={t('physio.addNotePlaceholder')}
                                                 rows={2}
                                             />
                                             <button onClick={handleAddNote} className="px-4 bg-teal-600 text-white rounded-lg hover:bg-teal-700 flex items-center justify-center">
@@ -141,21 +141,30 @@ const PhysiotherapistDashboard: React.FC = () => {
         }
     };
 
+    const getViewTitle = (view: View) => {
+        switch(view) {
+            case 'patients': return t('physio.nav.patients');
+            case 'notes': return t('physio.nav.notes');
+            case 'notifications': return t('admin.dashboard.notifications');
+            default: return view;
+        }
+    }
+
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex text-gray-800 dark:text-gray-200">
              <div className={`w-64 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-r border-black/10 dark:border-white/10 p-4 flex flex-col fixed h-full z-30 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static`}>
                 <div className="flex items-center gap-2 mb-10 px-2 pt-2">
                     <LogoIcon className="w-10 h-10" />
-                    <span className="text-xl font-bold text-teal-600 dark:text-teal-400">PhysioTrack</span>
+                    <span className="text-xl font-bold text-teal-600 dark:text-teal-400">{t('physio.title')}</span>
                 </div>
                 <nav className="flex-1 space-y-2">
                     <button onClick={() => setActiveView('patients')} className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${activeView === 'patients' ? 'bg-teal-100 text-teal-700 dark:bg-teal-900/50 dark:text-teal-300' : 'hover:bg-gray-200 dark:hover:bg-gray-800'}`}>
                         <UserGroupIcon className="w-6 h-6" />
-                        <span>Patients</span>
+                        <span>{t('physio.nav.patients')}</span>
                     </button>
                     <button onClick={() => setActiveView('notes')} className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${activeView === 'notes' ? 'bg-teal-100 text-teal-700 dark:bg-teal-900/50 dark:text-teal-300' : 'hover:bg-gray-200 dark:hover:bg-gray-800'}`}>
                         <ClipboardListIcon className="w-6 h-6" />
-                        <span>Notes</span>
+                        <span>{t('physio.nav.notes')}</span>
                     </button>
                 </nav>
             </div>
@@ -166,7 +175,7 @@ const PhysiotherapistDashboard: React.FC = () => {
                         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="md:hidden p-2 mr-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
                             <MenuIcon className="w-6 h-6" />
                         </button>
-                        <h2 className="text-xl font-semibold capitalize">{activeView}</h2>
+                        <h2 className="text-xl font-semibold capitalize">{getViewTitle(activeView)}</h2>
                     </div>
                     <div className="flex items-center space-x-4">
                         <LanguageSwitcher />

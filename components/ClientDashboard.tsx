@@ -1,3 +1,4 @@
+
 import React, { useContext, useState, useMemo, useEffect, useRef } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { MembershipStatus, User, Role, DailyRoutine, FitnessLevel, MembershipTier, NotificationType, Announcement, PreEstablishedRoutine } from '../types';
@@ -313,7 +314,11 @@ const ClientDashboard: React.FC = () => {
   const { currentUser, myTrainers, announcements, logout, updateCurrentUser, addNotification } = useContext(AuthContext);
   const [activeView, setActiveView] = useState<View>('dashboard');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  
+  // Sidebar states
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile drawer
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // Desktop collapse
+
   const [preselectedContact, setPreselectedContact] = useState<User | null>(null);
   const [shareModalRoutine, setShareModalRoutine] = useState<DailyRoutine[] | PreEstablishedRoutine | null>(null);
 
@@ -394,14 +399,23 @@ const ClientDashboard: React.FC = () => {
             setActiveView={setActiveView} 
             isOpen={isSidebarOpen}
             onClose={() => setIsSidebarOpen(false)}
+            isCollapsed={isSidebarCollapsed}
+            toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         />
+        
+        {/* Mobile Overlay */}
         {isSidebarOpen && <div onClick={() => setIsSidebarOpen(false)} className="fixed inset-0 bg-black/60 z-20 md:hidden" aria-hidden="true" />}
-        <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ml-0`}>
+
+        {/* Main Content - Adjusts margin based on sidebar state */}
+        <div className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64'}`}>
             <header className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm sticky top-0 z-10 p-4 flex justify-between items-center border-b border-black/10 dark:border-white/10">
-                <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" aria-label="Toggle sidebar">
+                <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors md:hidden" aria-label="Toggle sidebar">
                     <MenuIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
                 </button>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-4 ml-auto">
+                    <button onClick={() => setActiveView('messages')} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors" aria-label="Mensajes">
+                        <ChatBubbleLeftRightIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
+                    </button>
                     <NotificationBell 
                         onViewAll={() => setActiveView('notifications')}
                         onNotificationClick={(view) => setActiveView(view as View)}
@@ -416,20 +430,13 @@ const ClientDashboard: React.FC = () => {
                 </div>
             </header>
             <main className="flex-grow flex items-center justify-center p-4 md:p-8">
-                <div key={activeView} className="animate-fade-in">
+                <div key={activeView} className="animate-fade-in w-full">
                     {renderContent()}
                 </div>
             </main>
         </div>
         {isEditModalOpen && <EditProfileModal user={currentUser} onSave={handleProfileSave} onClose={() => setIsEditModalOpen(false)} />}
         </div>
-        <button
-            onClick={() => setActiveView('messages')}
-            className="fixed bottom-24 right-6 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full p-4 shadow-lg transition-transform transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-75 z-40"
-            aria-label="Abrir mensajes"
-        >
-            <ChatBubbleLeftRightIcon className="w-6 h-6" />
-        </button>
         {shareModalRoutine && (
             <ShareRoutineModal
                 routine={shareModalRoutine}

@@ -42,14 +42,14 @@ const NutritionistDashboard: React.FC = () => {
                                         </div>
                                     </div>
                                     <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                                        <p><strong>Goals:</strong> {client.fitnessGoals || 'N/A'}</p>
-                                        <p><strong>Dietary:</strong> {client.dietaryPreferences || 'N/A'}</p>
+                                        <p><strong>{t('nutritionist.goals')}:</strong> {client.fitnessGoals || t('admin.userDetailsModal.notApplicable')}</p>
+                                        <p><strong>{t('nutritionist.dietary')}:</strong> {client.dietaryPreferences || t('admin.userDetailsModal.notApplicable')}</p>
                                     </div>
                                     <button 
                                         onClick={() => { setSelectedClient(client); setActiveView('logs'); }}
                                         className="mt-4 w-full py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors"
                                     >
-                                        View Logs
+                                        {t('nutritionist.viewLogs')}
                                     </button>
                                 </div>
                             ))}
@@ -60,10 +60,10 @@ const NutritionistDashboard: React.FC = () => {
                 return (
                     <div className="space-y-6 animate-fade-in">
                         <div className="flex items-center space-x-2">
-                             <button onClick={() => setSelectedClient(null)} className="text-sm text-gray-500 hover:text-primary underline">All Clients</button>
+                             <button onClick={() => setSelectedClient(null)} className="text-sm text-gray-500 hover:text-primary underline">{t('nutritionist.allClients')}</button>
                              <span>/</span>
                              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                {selectedClient ? `${selectedClient.name}'s Logs` : t('nutritionist.nutritionLogs')}
+                                {selectedClient ? `${selectedClient.name}'s ${t('nutritionist.nav.logs')}` : t('nutritionist.nutritionLogs')}
                             </h2>
                         </div>
                         
@@ -79,19 +79,19 @@ const NutritionistDashboard: React.FC = () => {
                                             {log.aiAnalysis && (
                                                 <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-100 dark:border-green-800">
                                                     <h4 className="font-bold text-green-800 dark:text-green-300 mb-2 flex items-center gap-2">
-                                                        <AppleIcon className="w-4 h-4" /> AI Analysis
+                                                        <AppleIcon className="w-4 h-4" /> {t('nutritionist.aiAnalysis')}
                                                     </h4>
                                                     <div className="grid grid-cols-3 gap-4 text-center mb-2">
                                                         <div className="p-2 bg-white dark:bg-gray-800 rounded shadow-sm">
-                                                            <p className="text-xs text-gray-500">Protein</p>
+                                                            <p className="text-xs text-gray-500">{t('nutritionist.protein')}</p>
                                                             <p className="font-bold">{log.aiAnalysis.estimatedMacros.protein}</p>
                                                         </div>
                                                         <div className="p-2 bg-white dark:bg-gray-800 rounded shadow-sm">
-                                                            <p className="text-xs text-gray-500">Carbs</p>
+                                                            <p className="text-xs text-gray-500">{t('nutritionist.carbs')}</p>
                                                             <p className="font-bold">{log.aiAnalysis.estimatedMacros.carbs}</p>
                                                         </div>
                                                         <div className="p-2 bg-white dark:bg-gray-800 rounded shadow-sm">
-                                                            <p className="text-xs text-gray-500">Fat</p>
+                                                            <p className="text-xs text-gray-500">{t('nutritionist.fat')}</p>
                                                             <p className="font-bold">{log.aiAnalysis.estimatedMacros.fat}</p>
                                                         </div>
                                                     </div>
@@ -101,7 +101,7 @@ const NutritionistDashboard: React.FC = () => {
                                         </div>
                                     ))
                                 ) : (
-                                    <p className="text-gray-500">No logs recorded for this client yet.</p>
+                                    <p className="text-gray-500">{t('nutritionist.noLogsYet')}</p>
                                 )}
                              </div>
                         ) : (
@@ -116,21 +116,30 @@ const NutritionistDashboard: React.FC = () => {
         }
     };
 
+    const getViewTitle = (view: View) => {
+        switch(view) {
+            case 'clients': return t('nutritionist.nav.clients');
+            case 'logs': return t('nutritionist.nav.logs');
+            case 'notifications': return t('admin.dashboard.notifications');
+            default: return view;
+        }
+    }
+
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex text-gray-800 dark:text-gray-200">
              <div className={`w-64 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-r border-black/10 dark:border-white/10 p-4 flex flex-col fixed h-full z-30 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static`}>
                 <div className="flex items-center gap-2 mb-10 px-2 pt-2">
                     <LogoIcon className="w-10 h-10" />
-                    <span className="text-xl font-bold text-green-600 dark:text-green-400">NutriPro</span>
+                    <span className="text-xl font-bold text-green-600 dark:text-green-400">{t('nutritionist.title')}</span>
                 </div>
                 <nav className="flex-1 space-y-2">
                     <button onClick={() => setActiveView('clients')} className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${activeView === 'clients' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' : 'hover:bg-gray-200 dark:hover:bg-gray-800'}`}>
                         <UserGroupIcon className="w-6 h-6" />
-                        <span>Clients</span>
+                        <span>{t('nutritionist.nav.clients')}</span>
                     </button>
                     <button onClick={() => setActiveView('logs')} className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${activeView === 'logs' ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' : 'hover:bg-gray-200 dark:hover:bg-gray-800'}`}>
                         <ClipboardListIcon className="w-6 h-6" />
-                        <span>Logs</span>
+                        <span>{t('nutritionist.nav.logs')}</span>
                     </button>
                 </nav>
             </div>
@@ -141,7 +150,7 @@ const NutritionistDashboard: React.FC = () => {
                         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="md:hidden p-2 mr-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
                             <MenuIcon className="w-6 h-6" />
                         </button>
-                        <h2 className="text-xl font-semibold capitalize">{activeView}</h2>
+                        <h2 className="text-xl font-semibold capitalize">{getViewTitle(activeView)}</h2>
                     </div>
                     <div className="flex items-center space-x-4">
                         <LanguageSwitcher />

@@ -73,11 +73,11 @@ const GeneralManagerDashboard: React.FC = () => {
                             <StatCard title={t('manager.revenue')} value={`$${stats.totalRevenue.toLocaleString()}`} icon={<CurrencyDollarIcon className="w-6 h-6"/>} />
                             <StatCard title={t('manager.mrr')} value={`$${stats.mrr.toLocaleString()}`} icon={<ChartBarIcon className="w-6 h-6"/>} trend="+5% vs last month" />
                             <StatCard title={t('manager.activeMembers')} value={stats.activeMembers} icon={<UserGroupIcon className="w-6 h-6"/>} />
-                             <StatCard title="Staff Count" value={staffMembers.length} icon={<UserGroupIcon className="w-6 h-6"/>} />
+                             <StatCard title={t('manager.staffCount')} value={staffMembers.length} icon={<UserGroupIcon className="w-6 h-6"/>} />
                         </div>
                         
                         <div className="bg-white dark:bg-gray-800/50 p-6 rounded-xl shadow-lg">
-                            <h3 className="text-lg font-bold mb-6 text-gray-900 dark:text-white">Revenue Trend</h3>
+                            <h3 className="text-lg font-bold mb-6 text-gray-900 dark:text-white">{t('manager.revenueTrend')}</h3>
                             <ResponsiveContainer width="100%" height={300}>
                                 <BarChart data={revenueData}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-gray-200 dark:text-white/10" />
@@ -111,8 +111,8 @@ const GeneralManagerDashboard: React.FC = () => {
             case 'financials':
                 return (
                     <div className="bg-white dark:bg-gray-800/50 p-6 rounded-xl shadow-lg animate-fade-in">
-                        <h2 className="text-2xl font-bold mb-6">{t('manager.financials')} (Simulated)</h2>
-                        <p className="text-gray-500">Detailed financial breakdowns, P&L, and payroll reports would go here.</p>
+                        <h2 className="text-2xl font-bold mb-6">{t('manager.financials')}</h2>
+                        <p className="text-gray-500">{t('manager.financialsPlaceholder')}</p>
                     </div>
                 );
              case 'notifications':
@@ -121,6 +121,16 @@ const GeneralManagerDashboard: React.FC = () => {
                 return null;
         }
     };
+    
+    const getViewTitle = (view: View) => {
+        switch(view) {
+            case 'overview': return t('manager.overview');
+            case 'staff': return t('manager.staff');
+            case 'financials': return t('manager.financials');
+            case 'notifications': return t('admin.dashboard.notifications');
+            default: return view;
+        }
+    }
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex text-gray-800 dark:text-gray-200">
@@ -128,7 +138,7 @@ const GeneralManagerDashboard: React.FC = () => {
              <div className={`w-64 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-r border-black/10 dark:border-white/10 p-4 flex flex-col fixed h-full z-30 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static`}>
                 <div className="flex items-center gap-2 mb-10 px-2 pt-2">
                     <LogoIcon className="w-10 h-10" />
-                    <span className="text-xl font-bold text-primary">Manager Panel</span>
+                    <span className="text-xl font-bold text-primary">{t('manager.title')}</span>
                 </div>
                 <nav className="flex-1 space-y-2">
                     <button onClick={() => setActiveView('overview')} className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${activeView === 'overview' ? 'bg-primary/10 text-primary' : 'hover:bg-gray-200 dark:hover:bg-gray-800'}`}>
@@ -153,7 +163,7 @@ const GeneralManagerDashboard: React.FC = () => {
                         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="md:hidden p-2 mr-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
                             <MenuIcon className="w-6 h-6" />
                         </button>
-                        <h2 className="text-xl font-semibold capitalize">{activeView}</h2>
+                        <h2 className="text-xl font-semibold capitalize">{getViewTitle(activeView)}</h2>
                     </div>
                     <div className="flex items-center space-x-4">
                         <LanguageSwitcher />

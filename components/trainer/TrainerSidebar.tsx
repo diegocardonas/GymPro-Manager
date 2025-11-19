@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { UserGroupIcon } from '../icons/UserGroupIcon';
 import { UserCircleIcon } from '../icons/UserCircleIcon';
@@ -8,6 +9,8 @@ import { ClipboardDocumentListIcon } from '../icons/ClipboardDocumentListIcon';
 import { ChartBarIcon } from '../icons/ChartBarIcon';
 import { CalendarDaysIcon } from '../icons/CalendarDaysIcon';
 import { ChatBubbleLeftRightIcon } from '../icons/ChatBubbleLeftRightIcon';
+import { ChevronLeftIcon } from '../icons/ChevronLeftIcon';
+import { ChevronRightIcon } from '../icons/ChevronRightIcon';
 
 type View = 'dashboard' | 'clients' | 'schedule' | 'messages' | 'profile' | 'routine-templates' | 'notifications' | 'settings';
 
@@ -16,9 +19,11 @@ interface SidebarProps {
     setActiveView: (view: View) => void;
     isOpen: boolean;
     onClose: () => void;
+    isCollapsed: boolean;
+    toggleCollapse: () => void;
 }
 
-const TrainerSidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, onClose }) => {
+const TrainerSidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, onClose, isCollapsed, toggleCollapse }) => {
     const navItems = [
         { id: 'dashboard', label: 'Panel de Control', icon: ChartBarIcon },
         { id: 'clients', label: 'Mis Clientes', icon: UserGroupIcon },
@@ -31,31 +36,63 @@ const TrainerSidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isO
     ];
 
     return (
-        <div className={`w-64 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-r border-black/10 dark:border-white/10 p-4 flex flex-col fixed h-full z-30 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-            <div className="flex items-center gap-2 mb-10 px-2 pt-2">
-                <LogoIcon className="w-10 h-10" />
-                <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 dark:from-purple-400 dark:to-pink-400">
-                    GymPro
-                </span>
+        <div className={`fixed h-full z-30 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-r border-black/10 dark:border-white/10 flex flex-col transition-all duration-300 ease-in-out
+            ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
+            md:translate-x-0 
+            ${isCollapsed ? 'w-20' : 'w-64'}
+        `}>
+            <div className={`flex items-center h-16 px-4 border-b border-transparent ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+                 {!isCollapsed ? (
+                    <div className="flex items-center gap-2 overflow-hidden">
+                        <LogoIcon className="w-8 h-8 flex-shrink-0" />
+                        <span className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 dark:from-purple-400 dark:to-pink-400 whitespace-nowrap">
+                            GymPro
+                        </span>
+                    </div>
+                 ) : (
+                     <LogoIcon className="w-10 h-10" />
+                 )}
             </div>
-            <nav className="flex-1 overflow-y-auto">
-                <ul>
+
+            <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 custom-scrollbar">
+                <ul className="space-y-1 px-2">
                     {navItems.map(item => (
                         <li key={item.id}>
                             <button 
                                 onClick={() => {
                                     setActiveView(item.id as View);
-                                    onClose();
+                                    if (window.innerWidth < 768) onClose();
                                 }}
-                                className={`w-full flex items-center space-x-3 p-3 rounded-lg text-lg transition-colors ${activeView === item.id ? 'bg-primary/10 text-primary' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white'}`}
+                                className={`w-full flex items-center p-2 rounded-lg transition-colors group relative
+                                    ${activeView === item.id 
+                                        ? 'bg-primary/10 text-primary' 
+                                        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-200/50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-white'}
+                                    ${isCollapsed ? 'justify-center' : 'space-x-3'}
+                                `}
+                                title={isCollapsed ? item.label : ''}
                             >
-                                <item.icon className="w-6 h-6" />
-                                <span>{item.label}</span>
+                                <item.icon className={`w-6 h-6 flex-shrink-0 ${activeView === item.id ? 'text-primary' : ''}`} />
+                                {!isCollapsed && <span className="truncate font-medium">{item.label}</span>}
+                                
+                                {isCollapsed && (
+                                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-50">
+                                        {item.label}
+                                    </div>
+                                )}
                             </button>
                         </li>
                     ))}
                 </ul>
             </nav>
+
+             <div className="hidden md:flex p-4 border-t border-black/5 dark:border-white/5 justify-end">
+                <button 
+                    onClick={toggleCollapse}
+                    className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors w-full flex items-center justify-center"
+                >
+                    {isCollapsed ? <ChevronRightIcon className="w-5 h-5" /> : <ChevronLeftIcon className="w-5 h-5" />}
+                </button>
+            </div>
         </div>
     );
 };

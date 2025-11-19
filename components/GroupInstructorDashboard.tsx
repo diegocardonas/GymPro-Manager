@@ -21,8 +21,6 @@ const GroupInstructorDashboard: React.FC = () => {
     const [activeView, setActiveView] = useState<View>('schedule');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    // Mock filtering by current user (assuming current user ID is matched in class trainerId)
-    // Since mock data might not match perfectly with generated IDs, we'll show all classes for demo if none match
     const myClasses = useMemo(() => {
         const matches = gymClasses.filter(c => c.trainerId === currentUser?.id);
         return matches.length > 0 ? matches : gymClasses.slice(0, 3); 
@@ -58,7 +56,7 @@ const GroupInstructorDashboard: React.FC = () => {
                                             {cls.bookedClientIds.length > 5 && (
                                                 <span className="inline-flex items-center justify-center h-8 w-8 rounded-full ring-2 ring-white dark:ring-gray-800 bg-gray-200 text-xs font-medium">+{cls.bookedClientIds.length - 5}</span>
                                             )}
-                                             {cls.bookedClientIds.length === 0 && <span className="text-sm text-gray-400 italic">No signups yet</span>}
+                                             {cls.bookedClientIds.length === 0 && <span className="text-sm text-gray-400 italic">{t('instructor.noSignups')}</span>}
                                         </div>
                                     </div>
                                 </div>
@@ -75,12 +73,21 @@ const GroupInstructorDashboard: React.FC = () => {
         }
     };
 
+    const getViewTitle = (view: View) => {
+        switch(view) {
+            case 'schedule': return t('instructor.myClasses');
+            case 'messages': return t('general.messages');
+            case 'notifications': return t('admin.dashboard.notifications');
+            default: return view;
+        }
+    }
+
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex text-gray-800 dark:text-gray-200">
              <div className={`w-64 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-r border-black/10 dark:border-white/10 p-4 flex flex-col fixed h-full z-30 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static`}>
                 <div className="flex items-center gap-2 mb-10 px-2 pt-2">
                     <LogoIcon className="w-10 h-10" />
-                    <span className="text-xl font-bold text-primary">Instructor Hub</span>
+                    <span className="text-xl font-bold text-primary">{t('instructor.title')}</span>
                 </div>
                 <nav className="flex-1 space-y-2">
                     <button onClick={() => setActiveView('schedule')} className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${activeView === 'schedule' ? 'bg-primary/10 text-primary' : 'hover:bg-gray-200 dark:hover:bg-gray-800'}`}>
@@ -89,7 +96,7 @@ const GroupInstructorDashboard: React.FC = () => {
                     </button>
                     <button onClick={() => setActiveView('messages')} className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${activeView === 'messages' ? 'bg-primary/10 text-primary' : 'hover:bg-gray-200 dark:hover:bg-gray-800'}`}>
                         <ChatBubbleLeftRightIcon className="w-6 h-6" />
-                        <span>Messages</span>
+                        <span>{t('general.messages')}</span>
                     </button>
                 </nav>
             </div>
@@ -100,7 +107,7 @@ const GroupInstructorDashboard: React.FC = () => {
                         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="md:hidden p-2 mr-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
                             <MenuIcon className="w-6 h-6" />
                         </button>
-                        <h2 className="text-xl font-semibold capitalize">{activeView}</h2>
+                        <h2 className="text-xl font-semibold capitalize">{getViewTitle(activeView)}</h2>
                     </div>
                     <div className="flex items-center space-x-4">
                         <LanguageSwitcher />

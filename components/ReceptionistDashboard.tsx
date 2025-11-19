@@ -103,7 +103,7 @@ const ReceptionistDashboard: React.FC = () => {
                                     </div>
                                 ))}
                                 {searchTerm && filteredUsers.length === 0 && (
-                                    <p className="text-center text-gray-500 dark:text-gray-400 py-4">No members found.</p>
+                                    <p className="text-center text-gray-500 dark:text-gray-400 py-4">{t('receptionist.noMembersFound')}</p>
                                 )}
                             </div>
                         </div>
@@ -112,7 +112,7 @@ const ReceptionistDashboard: React.FC = () => {
                             <div className="bg-white dark:bg-gray-800/50 p-6 rounded-xl shadow-lg">
                                 <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                                     <CalendarDaysIcon className="w-5 h-5 text-primary" />
-                                    {t('receptionist.upcomingClasses')} (Today)
+                                    {t('receptionist.upcomingClasses')} ({t('messagingView.today')})
                                 </h3>
                                 <div className="space-y-3">
                                     {todayClasses.length > 0 ? todayClasses.map(cls => (
@@ -126,7 +126,7 @@ const ReceptionistDashboard: React.FC = () => {
                                             </div>
                                             <span className="text-sm font-bold text-primary">{cls.bookedClientIds.length}/{cls.capacity}</span>
                                         </div>
-                                    )) : <p className="text-gray-500 text-sm">No classes today.</p>}
+                                    )) : <p className="text-gray-500 text-sm">{t('receptionist.noClassesToday')}</p>}
                                 </div>
                             </div>
                             
@@ -142,11 +142,11 @@ const ReceptionistDashboard: React.FC = () => {
                                             <div key={id} className="flex items-center gap-3 p-2">
                                                 <img src={u.avatarUrl} className="w-8 h-8 rounded-full" />
                                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{u.name}</span>
-                                                <span className="ml-auto text-xs text-gray-400">Just now</span>
+                                                <span className="ml-auto text-xs text-gray-400">{t('general.justNow')}</span>
                                             </div>
                                         ) : null;
                                     })}
-                                    {checkedInUsers.length === 0 && <p className="text-gray-500 text-sm">No check-ins yet.</p>}
+                                    {checkedInUsers.length === 0 && <p className="text-gray-500 text-sm">{t('receptionist.noCheckInsYet')}</p>}
                                 </div>
                             </div>
                         </div>
@@ -177,7 +177,7 @@ const ReceptionistDashboard: React.FC = () => {
                                             </td>
                                             <td className="p-3 text-sm text-gray-500">{user.phone}</td>
                                             <td className="p-3">
-                                                <button onClick={() => handleCheckIn(user)} className="text-primary hover:underline text-sm font-semibold">Check In</button>
+                                                <button onClick={() => handleCheckIn(user)} className="text-primary hover:underline text-sm font-semibold">{t('receptionist.checkInButton')}</button>
                                             </td>
                                         </tr>
                                     ))}
@@ -199,20 +199,20 @@ const ReceptionistDashboard: React.FC = () => {
              <div className={`w-64 bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-r border-black/10 dark:border-white/10 p-4 flex flex-col fixed h-full z-30 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static`}>
                 <div className="flex items-center gap-2 mb-10 px-2 pt-2">
                     <LogoIcon className="w-10 h-10" />
-                    <span className="text-xl font-bold text-primary">GymPro Reception</span>
+                    <span className="text-xl font-bold text-primary">{t('receptionist.title')}</span>
                 </div>
                 <nav className="flex-1 space-y-2">
                     <button onClick={() => setActiveView('check-in')} className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${activeView === 'check-in' ? 'bg-primary/10 text-primary' : 'hover:bg-gray-200 dark:hover:bg-gray-800'}`}>
                         <IdentificationIcon className="w-6 h-6" />
-                        <span>Check-In</span>
+                        <span>{t('receptionist.nav.checkIn')}</span>
                     </button>
                     <button onClick={() => setActiveView('users')} className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${activeView === 'users' ? 'bg-primary/10 text-primary' : 'hover:bg-gray-200 dark:hover:bg-gray-800'}`}>
                         <UserGroupIcon className="w-6 h-6" />
-                        <span>Members</span>
+                        <span>{t('receptionist.nav.members')}</span>
                     </button>
-                    <button onClick={() => setActiveView('check-in')} className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${activeView === 'classes' ? 'bg-primary/10 text-primary' : 'hover:bg-gray-200 dark:hover:bg-gray-800'}`}>
+                    <button onClick={() => setActiveView('classes')} className={`w-full flex items-center space-x-3 p-3 rounded-lg transition-colors ${activeView === 'classes' ? 'bg-primary/10 text-primary' : 'hover:bg-gray-200 dark:hover:bg-gray-800'}`}>
                         <CalendarDaysIcon className="w-6 h-6" />
-                        <span>Classes</span>
+                        <span>{t('receptionist.nav.classes')}</span>
                     </button>
                 </nav>
             </div>
@@ -224,7 +224,12 @@ const ReceptionistDashboard: React.FC = () => {
                         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="md:hidden p-2 mr-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
                             <MenuIcon className="w-6 h-6" />
                         </button>
-                        <h2 className="text-xl font-semibold capitalize">{activeView.replace('-', ' ')}</h2>
+                        <h2 className="text-xl font-semibold capitalize">
+                            {activeView === 'check-in' ? t('receptionist.nav.checkIn') : 
+                             activeView === 'users' ? t('receptionist.nav.members') : 
+                             activeView === 'classes' ? t('receptionist.nav.classes') : 
+                             t('admin.dashboard.notifications')}
+                        </h2>
                     </div>
                     <div className="flex items-center space-x-4">
                         <LanguageSwitcher />

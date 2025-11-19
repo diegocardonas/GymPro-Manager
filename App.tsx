@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { User, Role, Notification, PreEstablishedRoutine, NotificationType, Payment, WorkoutSession, GymClass, Message, Announcement, Challenge, Achievement, EquipmentItem, IncidentReport, AICoachMessage, NutritionLog, MembershipStatus } from './types';
+import { User, Role, Notification, PreEstablishedRoutine, NotificationType, Payment, WorkoutSession, GymClass, Message, Announcement, Challenge, Achievement, EquipmentItem, IncidentReport, AICoachMessage, NutritionLog, MembershipStatus, ToastMessage } from './types';
 import { AuthContext } from './context/AuthContext';
 import { MOCK_USERS } from './data/mockUsers';
 import { MOCK_NOTIFICATIONS } from './data/mockNotifications';
@@ -25,6 +25,7 @@ import NutritionistDashboard from './components/NutritionistDashboard';
 import PhysiotherapistDashboard from './components/PhysiotherapistDashboard';
 import LoginScreen from './components/LoginScreen';
 import Footer from './components/Footer';
+import { ToastContainer } from './components/shared/Toast';
 
 import { LogoIcon } from './components/icons/LogoIcon';
 import ReportIncidentModal from './components/shared/ReportIncidentModal';
@@ -76,6 +77,7 @@ const App: React.FC = () => {
   const [equipment, setEquipment] = usePersistentState<EquipmentItem[]>('gympro_equipment', MOCK_EQUIPMENT);
   const [incidents, setIncidents] = usePersistentState<IncidentReport[]>('gympro_incidents', []);
   
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   
   useEffect(() => {
@@ -89,15 +91,27 @@ const App: React.FC = () => {
   
   const ai = useMemo(() => new GoogleGenAI({ apiKey: process.env.API_KEY }), []);
   const aiChatSessions = useMemo(() => new Map<string, any>(), []);
+  
+  // Toast Helpers
+  const addToast = useCallback((message: string, type: 'success' | 'error' | 'info' | 'warning' = 'info', duration = 3000) => {
+      const id = Date.now().toString();
+      setToasts(prev => [...prev, { id, message, type, duration }]);
+  }, []);
+
+  const removeToast = useCallback((id: string) => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
+
 
   const login = useCallback(async (email: string, password: string): Promise<string | void> => {
     const userToLogin = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
     if (userToLogin) {
       setCurrentUser(userToLogin);
+      addToast(t('general.welcome', { name: userToLogin.name }), 'success');
     } else {
       return t('components.settingsView.passwordErrorCurrent'); // Reusing error message for invalid credentials
     }
-  }, [users, t]);
+  }, [users, t, addToast]);
   
   const register = useCallback(async (user: any): Promise<string | void> => {
       const existingUser = users.find(u => u.email.toLowerCase() === user.email.toLowerCase());
@@ -120,27 +134,32 @@ const App: React.FC = () => {
       
       setUsers(prev => [...prev, newUser]);
       setCurrentUser(newUser);
-  }, [users, setUsers]);
+      addToast("Account created successfully!", 'success');
+  }, [users, setUsers, addToast]);
 
   const logout = useCallback(() => {
     setCurrentUser(null);
-  }, []);
+    addToast("Logged out successfully", 'info');
+  }, [addToast]);
 
   const updateCurrentUser = useCallback((updatedUser: User) => {
     setCurrentUser(updatedUser);
     setUsers(prevUsers => prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u));
-  }, [setUsers]);
+    addToast("Profile updated", 'success');
+  }, [setUsers, addToast]);
 
   const updateUser = useCallback((updatedUser: User) => {
     setUsers(prevUsers => prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u));
     if(currentUser && currentUser.id === updatedUser.id) {
         setCurrentUser(updatedUser);
     }
-  }, [currentUser, setUsers]);
+    addToast("User updated", 'success');
+  }, [currentUser, setUsers, addToast]);
 
   const addUser = useCallback((newUser: User) => {
     setUsers(prevUsers => [...prevUsers, newUser]);
-  }, [setUsers]);
+    addToast("User added", 'success');
+  }, [setUsers, addToast]);
 
   const deleteUser = useCallback((userId: string) => {
     setUsers(prevUsers => {
@@ -154,7 +173,8 @@ const App: React.FC = () => {
       });
       return updatedUsers.filter(u => u.id !== userId);
     });
-  }, [setUsers]);
+    addToast("User deleted", 'info');
+  }, [setUsers, addToast]);
 
   const toggleBlockUser = useCallback((userIdToBlock: string) => {
     if (!currentUser) return;
@@ -165,8 +185,11 @@ const App: React.FC = () => {
         : [...currentBlockedIds, userIdToBlock];
     
     const updatedUser = { ...currentUser, blockedUserIds: newBlockedIds };
-    updateCurrentUser(updatedUser);
-  }, [currentUser, updateCurrentUser]);
+    // Don't call updateCurrentUser here to avoid double toast, just update logic
+    setCurrentUser(updatedUser);
+    setUsers(prevUsers => prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u));
+    addToast(isBlocked ? "User unblocked" : "User blocked", 'info');
+  }, [currentUser, setUsers, addToast]);
 
   const markNotificationAsRead = useCallback((notificationId: string) => { setNotifications(prev => prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)); }, [setNotifications]);
   const markAllNotificationsAsRead = useCallback((userId: string) => { setNotifications(prev => prev.map(n => n.userId === userId ? { ...n, isRead: true } : n)); }, [setNotifications]);
@@ -177,9 +200,20 @@ const App: React.FC = () => {
       setNotifications(prev => [newNotification, ...prev]);
   }, [setNotifications]);
 
-  const addRoutineTemplate = useCallback((newRoutine: PreEstablishedRoutine) => { setPreEstablishedRoutines(prev => [...prev, newRoutine]); }, [setPreEstablishedRoutines]);
-  const updateRoutineTemplate = useCallback((updatedRoutine: PreEstablishedRoutine) => { setPreEstablishedRoutines(prev => prev.map(r => r.id === updatedRoutine.id ? updatedRoutine : r)); }, [setPreEstablishedRoutines]);
-  const deleteRoutineTemplate = useCallback((routineId: string) => { setPreEstablishedRoutines(prev => prev.filter(r => r.id !== routineId)); }, [setPreEstablishedRoutines]);
+  const addRoutineTemplate = useCallback((newRoutine: PreEstablishedRoutine) => { 
+      setPreEstablishedRoutines(prev => [...prev, newRoutine]); 
+      addToast("Routine template created", 'success');
+  }, [setPreEstablishedRoutines, addToast]);
+  
+  const updateRoutineTemplate = useCallback((updatedRoutine: PreEstablishedRoutine) => { 
+      setPreEstablishedRoutines(prev => prev.map(r => r.id === updatedRoutine.id ? updatedRoutine : r)); 
+      addToast("Routine template updated", 'success');
+  }, [setPreEstablishedRoutines, addToast]);
+  
+  const deleteRoutineTemplate = useCallback((routineId: string) => { 
+      setPreEstablishedRoutines(prev => prev.filter(r => r.id !== routineId)); 
+      addToast("Routine template deleted", 'info');
+  }, [setPreEstablishedRoutines, addToast]);
 
   const logWorkout = useCallback((userId: string, session: WorkoutSession) => {
     setUsers(prev => prev.map(u => {
@@ -195,26 +229,43 @@ const App: React.FC = () => {
         addNotification({ userId: trainerId, title: 'Entrenamiento Registrado', message: `${client.name} acaba de registrar un entrenamiento.`, type: NotificationType.SUCCESS, });
       });
     }
-  }, [users, addNotification, setUsers]);
+    addToast("Workout logged successfully! Great job!", 'success');
+  }, [users, addNotification, setUsers, addToast]);
 
-  const addGymClass = useCallback((gymClass: Omit<GymClass, 'id'>) => { setGymClasses(prev => [...prev, { ...gymClass, id: `c${Date.now()}`}]); }, [setGymClasses]);
-  const updateGymClass = useCallback((updatedClass: GymClass) => { setGymClasses(prev => prev.map(c => c.id === updatedClass.id ? updatedClass : c)); }, [setGymClasses]);
-  const deleteGymClass = useCallback((classId: string) => { setGymClasses(prev => prev.filter(c => c.id !== classId)); }, [setGymClasses]);
-  const bookClass = useCallback((classId: string, userId: string): string => {
-    let message = '';
+  const addGymClass = useCallback((gymClass: Omit<GymClass, 'id'>) => { 
+      setGymClasses(prev => [...prev, { ...gymClass, id: `c${Date.now()}`}]); 
+      addToast("Class added to schedule", 'success');
+  }, [setGymClasses, addToast]);
+  
+  const updateGymClass = useCallback((updatedClass: GymClass) => { 
+      setGymClasses(prev => prev.map(c => c.id === updatedClass.id ? updatedClass : c)); 
+      addToast("Class updated", 'success');
+  }, [setGymClasses, addToast]);
+  
+  const deleteGymClass = useCallback((classId: string) => { 
+      setGymClasses(prev => prev.filter(c => c.id !== classId)); 
+      addToast("Class cancelled", 'info');
+  }, [setGymClasses, addToast]);
+  
+  const bookClass = useCallback((classId: string, userId: string) => {
     setGymClasses(prev => prev.map(c => {
       if (c.id === classId) {
-        if (c.bookedClientIds.includes(userId)) { message = "Ya estás inscrito en esta clase."; return c; }
-        if (c.bookedClientIds.length >= c.capacity) { message = "Esta clase está llena."; return c; }
+        if (c.bookedClientIds.includes(userId)) { 
+            addToast("You are already booked for this class.", 'warning');
+            return c; 
+        }
+        if (c.bookedClientIds.length >= c.capacity) { 
+            addToast("This class is fully booked.", 'error');
+            return c; 
+        }
         const updatedClass = { ...c, bookedClientIds: [...c.bookedClientIds, userId] };
         addNotification({ userId: c.trainerId, title: 'Nueva Reserva de Clase', message: `${users.find(u=>u.id===userId)?.name || 'Un cliente'} ha reservado tu clase de ${c.name}.`, type: NotificationType.INFO, });
-        message = `¡Inscripción exitosa para ${c.name}!`;
+        addToast(`Successfully booked ${c.name}!`, 'success');
         return updatedClass;
       }
       return c;
     }));
-    return message;
-  }, [addNotification, users, setGymClasses]);
+  }, [addNotification, users, setGymClasses, addToast]);
 
   const sendMessage = useCallback((message: Omit<Message, 'id' | 'timestamp' | 'isRead'>) => {
     const newMessage: Message = { ...message, id: `m${Date.now()}`, timestamp: new Date().toISOString(), isRead: false, };
@@ -230,9 +281,20 @@ const App: React.FC = () => {
     ));
   }, [setMessages]);
 
-  const addAnnouncement = useCallback((announcement: Omit<Announcement, 'id' | 'timestamp'>) => { setAnnouncements(prev => [{ ...announcement, id: `a${Date.now()}`, timestamp: new Date().toISOString() }, ...prev]); }, [setAnnouncements]);
-  const updateAnnouncement = useCallback((updatedAnnouncement: Announcement) => { setAnnouncements(prev => prev.map(a => a.id === updatedAnnouncement.id ? updatedAnnouncement : a)); }, [setAnnouncements]);
-  const deleteAnnouncement = useCallback((announcementId: string) => { setAnnouncements(prev => prev.filter(a => a.id !== announcementId)); }, [setAnnouncements]);
+  const addAnnouncement = useCallback((announcement: Omit<Announcement, 'id' | 'timestamp'>) => { 
+      setAnnouncements(prev => [{ ...announcement, id: `a${Date.now()}`, timestamp: new Date().toISOString() }, ...prev]); 
+      addToast("Announcement published", 'success');
+  }, [setAnnouncements, addToast]);
+  
+  const updateAnnouncement = useCallback((updatedAnnouncement: Announcement) => { 
+      setAnnouncements(prev => prev.map(a => a.id === updatedAnnouncement.id ? updatedAnnouncement : a)); 
+      addToast("Announcement updated", 'success');
+  }, [setAnnouncements, addToast]);
+  
+  const deleteAnnouncement = useCallback((announcementId: string) => { 
+      setAnnouncements(prev => prev.filter(a => a.id !== announcementId)); 
+      addToast("Announcement removed", 'info');
+  }, [setAnnouncements, addToast]);
   
   // AI Coach Logic
   const sendAICoachMessage = useCallback(async (userId: string, message: AICoachMessage): Promise<AICoachMessage | null> => {
@@ -306,46 +368,77 @@ const App: React.FC = () => {
                 return u;
             });
         });
+        addToast("AI Coach is currently unavailable.", 'error');
 
         return errorResponse;
     }
-  }, [ai, aiChatSessions, currentUser?.id, setUsers, t]);
+  }, [ai, aiChatSessions, currentUser?.id, setUsers, t, addToast]);
   
   // Gamification Logic
   const addChallenge = useCallback((challenge: Omit<Challenge, 'id' | 'participants'>) => {
     setChallenges(prev => [...prev, { ...challenge, id: `chal-${Date.now()}`, participants: [] }]);
-  }, [setChallenges]);
-  const updateChallenge = useCallback((challenge: Challenge) => { setChallenges(prev => prev.map(c => c.id === challenge.id ? challenge : c)); }, [setChallenges]);
-  const deleteChallenge = useCallback((id: string) => { setChallenges(prev => prev.filter(c => c.id !== id)); }, [setChallenges]);
+    addToast("New challenge created!", 'success');
+  }, [setChallenges, addToast]);
+  
+  const updateChallenge = useCallback((challenge: Challenge) => { 
+      setChallenges(prev => prev.map(c => c.id === challenge.id ? challenge : c)); 
+      addToast("Challenge updated", 'success');
+  }, [setChallenges, addToast]);
+  
+  const deleteChallenge = useCallback((id: string) => { 
+      setChallenges(prev => prev.filter(c => c.id !== id)); 
+      addToast("Challenge deleted", 'info');
+  }, [setChallenges, addToast]);
+  
   const joinChallenge = useCallback((challengeId: string, userId: string) => {
     setChallenges(prev => prev.map(c => {
       if (c.id === challengeId && !c.participants.some(p => p.userId === userId)) {
+        addToast("You joined the challenge!", 'success');
         return { ...c, participants: [...c.participants, { userId, progress: 0 }] };
       }
       return c;
     }));
-  }, [setChallenges]);
+  }, [setChallenges, addToast]);
+  
   const unlockAchievement = useCallback((userId: string, achievementId: string) => {
     setUsers(prev => prev.map(u => {
       if (u.id === userId && !(u.achievements || []).includes(achievementId)) {
         addNotification({ userId, title: "¡Logro Desbloqueado!", message: `¡Has ganado la insignia "${achievements.find(a=>a.id === achievementId)?.name}"!`, type: NotificationType.SUCCESS });
+        addToast(`Achievement Unlocked: ${achievements.find(a=>a.id === achievementId)?.name}`, 'success');
         return { ...u, achievements: [...(u.achievements || []), achievementId] };
       }
       return u;
     }));
-  }, [addNotification, achievements, setUsers]);
+  }, [addNotification, achievements, setUsers, addToast]);
 
   // Equipment & Incidents Logic
-  const addEquipment = useCallback((item: Omit<EquipmentItem, 'id'>) => { setEquipment(prev => [...prev, { ...item, id: `eq-${Date.now()}` }]); }, [setEquipment]);
-  const updateEquipment = useCallback((item: EquipmentItem) => { setEquipment(prev => prev.map(e => e.id === item.id ? item : e)); }, [setEquipment]);
-  const deleteEquipment = useCallback((id: string) => { setEquipment(prev => prev.filter(e => e.id !== id)); }, [setEquipment]);
+  const addEquipment = useCallback((item: Omit<EquipmentItem, 'id'>) => { 
+      setEquipment(prev => [...prev, { ...item, id: `eq-${Date.now()}` }]); 
+      addToast("Equipment added", 'success');
+  }, [setEquipment, addToast]);
+  
+  const updateEquipment = useCallback((item: EquipmentItem) => { 
+      setEquipment(prev => prev.map(e => e.id === item.id ? item : e)); 
+      addToast("Equipment details updated", 'success');
+  }, [setEquipment, addToast]);
+  
+  const deleteEquipment = useCallback((id: string) => { 
+      setEquipment(prev => prev.filter(e => e.id !== id)); 
+      addToast("Equipment removed", 'info');
+  }, [setEquipment, addToast]);
+  
   const reportIncident = useCallback((incident: Omit<IncidentReport, 'id' | 'timestamp' | 'isResolved'>) => {
     const newIncident = { ...incident, id: `inc-${Date.now()}`, timestamp: new Date().toISOString(), isResolved: false };
     setIncidents(prev => [newIncident, ...prev]);
     addNotification({ userId: '1', title: "Nuevo Reporte de Incidencia", message: `Se ha reportado un problema con el equipo ID ${incident.equipmentId}.`, type: NotificationType.ALERT });
     setIsReportModalOpen(false);
-  }, [addNotification, setIncidents]);
-  const resolveIncident = useCallback((id: string) => { setIncidents(prev => prev.map(i => i.id === id ? { ...i, isResolved: true } : i)); }, [setIncidents]);
+    addToast("Incident reported successfully", 'warning');
+  }, [addNotification, setIncidents, addToast]);
+  
+  const resolveIncident = useCallback((id: string) => { 
+      setIncidents(prev => prev.map(i => i.id === id ? { ...i, isResolved: true } : i)); 
+      addToast("Incident marked as resolved", 'success');
+  }, [setIncidents, addToast]);
   
   const toggleReportModal = useCallback(() => {
     setIsReportModalOpen(prev => !prev);
@@ -389,9 +482,11 @@ const App: React.FC = () => {
         const jsonText = response.text.trim();
         const analysis = JSON.parse(jsonText);
         newLog.aiAnalysis = analysis;
+        addToast("Meal analyzed successfully!", 'success');
     } catch (error) {
         console.error("Nutrition AI Error:", error);
         newLog.aiAnalysis = { estimatedCalories: "N/A", estimatedMacros: { protein: "N/A", carbs: "N/A", fat: "N/A" }, suggestion: t('app.nutritionLogError') };
+        addToast("Could not analyze meal. Added to log.", 'warning');
     }
 
     setUsers(prevUsers => {
@@ -407,19 +502,19 @@ const App: React.FC = () => {
             return u;
         });
     });
-  }, [ai, currentUser?.id, setUsers, i18n.language, t]);
+  }, [ai, currentUser?.id, setUsers, i18n.language, t, addToast]);
 
   const myTrainers = useMemo(() => { if (currentUser?.role !== Role.CLIENT) return []; return users.filter(u => u.role === Role.TRAINER && currentUser.trainerIds?.includes(u.id)); }, [currentUser, users]);
   const myClients = useMemo(() => { if (currentUser?.role !== Role.TRAINER) return []; return users.filter(u => u.role === Role.CLIENT && u.trainerIds?.includes(currentUser.id)); }, [currentUser, users]);
 
   const authContextValue = useMemo(() => ({
-    currentUser, users, myClients, myTrainers, notifications, preEstablishedRoutines, payments, gymClasses, messages, announcements, challenges, achievements, equipment, incidents,
+    currentUser, users, myClients, myTrainers, notifications, preEstablishedRoutines, payments, gymClasses, messages, announcements, challenges, achievements, equipment, incidents, toasts,
     logout, updateCurrentUser, updateUser, addUser, deleteUser, toggleBlockUser, markNotificationAsRead, markAllNotificationsAsRead, deleteNotification, addNotification, addRoutineTemplate, updateRoutineTemplate, deleteRoutineTemplate, logWorkout, addGymClass, updateGymClass, deleteGymClass, bookClass, sendMessage, markMessagesAsRead, addAnnouncement, updateAnnouncement, deleteAnnouncement,
-    sendAICoachMessage, addChallenge, updateChallenge, deleteChallenge, joinChallenge, unlockAchievement, addEquipment, updateEquipment, deleteEquipment, reportIncident, resolveIncident, toggleReportModal, addNutritionLog, login, register
+    sendAICoachMessage, addChallenge, updateChallenge, deleteChallenge, joinChallenge, unlockAchievement, addEquipment, updateEquipment, deleteEquipment, reportIncident, resolveIncident, toggleReportModal, addNutritionLog, login, register, addToast, removeToast
   }), [
-      currentUser, users, myClients, myTrainers, notifications, preEstablishedRoutines, payments, gymClasses, messages, announcements, challenges, achievements, equipment, incidents,
+      currentUser, users, myClients, myTrainers, notifications, preEstablishedRoutines, payments, gymClasses, messages, announcements, challenges, achievements, equipment, incidents, toasts,
       logout, updateCurrentUser, updateUser, addUser, deleteUser, toggleBlockUser, markNotificationAsRead, markAllNotificationsAsRead, deleteNotification, addNotification, addRoutineTemplate, updateRoutineTemplate, deleteRoutineTemplate, logWorkout, addGymClass, updateGymClass, deleteGymClass, bookClass, sendMessage, markMessagesAsRead, addAnnouncement, updateAnnouncement, deleteAnnouncement,
-      sendAICoachMessage, addChallenge, updateChallenge, deleteChallenge, joinChallenge, unlockAchievement, addEquipment, updateEquipment, deleteEquipment, reportIncident, resolveIncident, toggleReportModal, addNutritionLog, login, register
+      sendAICoachMessage, addChallenge, updateChallenge, deleteChallenge, joinChallenge, unlockAchievement, addEquipment, updateEquipment, deleteEquipment, reportIncident, resolveIncident, toggleReportModal, addNutritionLog, login, register, addToast, removeToast
   ]);
   
   const renderContent = () => {
@@ -485,6 +580,7 @@ const App: React.FC = () => {
     <ThemeProvider>
       <AuthContext.Provider value={authContextValue}>
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 font-sans transition-colors duration-300 flex flex-col">
+          <ToastContainer toasts={toasts} removeToast={removeToast} />
           {isLoading ? <SplashScreen /> : renderContent()}
         </div>
       </AuthContext.Provider>

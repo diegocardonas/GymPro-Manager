@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useContext, useEffect } from 'react';
 import { User, Role, MembershipStatus, SortConfig, FitnessLevel, MembershipTier } from '../../types';
 import { AuthContext } from '../../context/AuthContext';
@@ -337,12 +338,31 @@ const UserModal: React.FC<{ user: User | null; activeTab: UserTab; trainers: Use
     
     const isStaff = ![Role.CLIENT].includes(formData.role);
 
+    const calculateAge = (birthDate: string): number => {
+        if (!birthDate) return 0;
+        const today = new Date();
+        const birth = new Date(birthDate);
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+            age--;
+        }
+        return age;
+    };
+
+    const currentAge = formData.birthDate ? calculateAge(formData.birthDate) : formData.age;
+
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         if (['status', 'endDate', 'startDate', 'tierId'].includes(name)) setFormData(prev => ({ ...prev, membership: { ...prev.membership, [name]: value } }));
         else if (['emergencyContactName', 'emergencyContactPhone'].includes(name)) {
             const field = name === 'emergencyContactName' ? 'name' : 'phone';
             setFormData(prev => ({...prev, emergencyContact: { ...prev.emergencyContact, [field]: value, name: prev.emergencyContact?.name || '', phone: prev.emergencyContact?.phone || ''}}));
+        }
+        else if (name === 'birthDate') {
+            const newAge = calculateAge(value);
+            setFormData(prev => ({...prev, birthDate: value, age: newAge}));
         }
         else setFormData(prev => ({ ...prev, [name]: value as Role }));
     };
@@ -400,7 +420,8 @@ const UserModal: React.FC<{ user: User | null; activeTab: UserTab; trainers: Use
                             <div><label className="block text-sm font-medium">{t('general.email')}</label><input type="email" name="email" value={formData.email} onChange={handleChange} className="mt-1 block w-full input-style" required /></div>
                             <div><label className="block text-sm font-medium">{t('general.phone')}</label><input type="tel" name="phone" value={formData.phone} onChange={handleChange} className="mt-1 block w-full input-style" /></div>
                             <div><label className="block text-sm font-medium">{t('admin.userDetailsModal.gender')}</label><select name="gender" value={formData.gender || ''} onChange={handleChange} className="mt-1 block w-full input-style"><option value="">{t('admin.userManagement.selectPlaceholder')}</option><option value="Masculino">{t('genders.Masculino')}</option><option value="Femenino">{t('genders.Femenino')}</option><option value="Otro">{t('genders.Otro')}</option><option value="Prefiero no decirlo">{t('genders.Prefiero no decirlo')}</option></select></div>
-                            <div><label className="block text-sm font-medium">{t('admin.userDetailsModal.age')}</label><input type="number" name="age" value={formData.age || ''} onChange={handleChange} className="mt-1 block w-full input-style" /></div>
+                            <div><label className="block text-sm font-medium">{t('general.birthDate')}</label><input type="date" name="birthDate" value={formData.birthDate || ''} onChange={handleChange} className="mt-1 block w-full input-style" /></div>
+                             <div><label className="block text-sm font-medium">{t('admin.userDetailsModal.age')}</label><input type="text" name="age" value={currentAge !== undefined ? currentAge : ''} readOnly className="mt-1 block w-full bg-gray-200/50 dark:bg-gray-700/50 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-500 dark:text-gray-400 cursor-not-allowed" /></div>
                         </div>
                     </>)}
                     {modalActiveTab === 'membership' && !isStaff && (<>

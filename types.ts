@@ -39,6 +39,14 @@ export interface Notification {
     linkTo?: string;
 }
 
+// Toast Notification Types
+export interface ToastMessage {
+    id: string;
+    message: string;
+    type: 'success' | 'error' | 'info' | 'warning';
+    duration?: number;
+}
+
 export interface ThemePalette {
   primary: string; // HSL value string 'H S% L%'
   'primary-foreground': string; // HSL value string 'H S% L%'
@@ -243,7 +251,8 @@ export interface User {
   dietaryPreferences?: string;
   height?: number; // in cm
   weight?: number; // in kg
-  age?: number;
+  birthDate?: string; // ISO string YYYY-MM-DD
+  age?: number; // derived or manually set if birthDate missing
   gender?: 'Masculino' | 'Femenino' | 'Otro' | 'Prefiero no decirlo';
   fitnessLevel?: FitnessLevel;
   medicalConditions?: string;

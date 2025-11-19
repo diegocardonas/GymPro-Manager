@@ -10,9 +10,15 @@ const ClassBooking: React.FC = () => {
 
     const handleBookClass = (classId: string) => {
         if (!currentUser) return;
-        const message = bookClass(classId, currentUser.id);
-        alert(message);
+        bookClass(classId, currentUser.id);
     };
+
+    const getCapacityColor = (current: number, max: number) => {
+        const percentage = current / max;
+        if (percentage >= 1) return 'bg-red-500';
+        if (percentage >= 0.8) return 'bg-yellow-500';
+        return 'bg-green-500';
+    }
 
     return (
         <div className="w-full max-w-4xl space-y-8">
@@ -25,32 +31,38 @@ const ClassBooking: React.FC = () => {
                         const isBooked = currentUser && gymClass.bookedClientIds.includes(currentUser.id);
                         const isFull = gymClass.bookedClientIds.length >= gymClass.capacity;
                         const canBook = !isBooked && !isFull;
+                        const capacityColor = getCapacityColor(gymClass.bookedClientIds.length, gymClass.capacity);
                         
                         return (
-                            <div key={gymClass.id} className="p-4 bg-gray-100 dark:bg-gray-700/50 rounded-lg flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                            <div key={gymClass.id} className="p-4 bg-gray-100 dark:bg-gray-700/50 rounded-lg flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition-all hover:shadow-md border border-transparent hover:border-gray-200 dark:hover:border-gray-600">
                                 <div className="flex-1">
-                                    <p className="font-bold text-lg text-primary">{gymClass.name}</p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">{trainer?.name || 'Unassigned'}</p>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                        {new Date(gymClass.startTime).toLocaleDateString()} at {new Date(gymClass.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    <div className="flex items-center gap-2 mb-1">
+                                         <p className="font-bold text-lg text-primary">{gymClass.name}</p>
+                                         {isBooked && <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs font-bold rounded-full">Reservado</span>}
+                                    </div>
+                                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{trainer?.name || 'Unassigned'}</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                        <span className="font-mono bg-gray-200 dark:bg-gray-600 px-1.5 rounded text-xs">
+                                            {new Date(gymClass.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                        {new Date(gymClass.startTime).toLocaleDateString()}
                                     </p>
                                 </div>
-                                <div className="flex items-center space-x-4">
-                                    <div className="text-center">
-                                        <p className="font-semibold text-gray-800 dark:text-gray-200">{gymClass.bookedClientIds.length} / {gymClass.capacity}</p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">Reservados</p>
+                                <div className="flex flex-col items-end space-y-2">
+                                    <div className="flex items-center gap-2 text-sm">
+                                        <div className={`w-2 h-2 rounded-full ${capacityColor}`}></div>
+                                        <span className="font-medium text-gray-700 dark:text-gray-300">{gymClass.bookedClientIds.length} / {gymClass.capacity}</span>
                                     </div>
                                     <button 
                                         onClick={() => handleBookClass(gymClass.id)}
                                         disabled={!canBook}
-                                        className={`px-4 py-2 rounded-lg font-semibold text-sm transition-colors w-28 text-center
-                                            ${isBooked ? 'bg-green-500 text-white cursor-default' : ''}
-                                            ${isFull && !isBooked ? 'bg-red-500 text-white cursor-not-allowed' : ''}
-                                            ${canBook ? 'bg-primary hover:bg-primary/90 text-primary-foreground' : ''}
-                                            disabled:opacity-70 disabled:cursor-not-allowed
+                                        className={`px-6 py-2 rounded-lg font-bold text-sm transition-all w-32 text-center shadow-sm
+                                            ${isBooked ? 'bg-gray-200 text-gray-500 cursor-default dark:bg-gray-600 dark:text-gray-400' : ''}
+                                            ${isFull && !isBooked ? 'bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-600' : ''}
+                                            ${canBook ? 'bg-primary hover:bg-primary/90 text-primary-foreground transform hover:-translate-y-0.5' : ''}
                                         `}
                                     >
-                                        {isBooked ? 'Reservado' : isFull ? 'Completo' : 'Reservar Ahora'}
+                                        {isBooked ? 'Listo' : isFull ? 'Lleno' : 'Reservar'}
                                     </button>
                                 </div>
                             </div>

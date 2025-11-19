@@ -25,57 +25,73 @@ import Footer from './Footer';
 
 type View = 'dashboard' | 'clients' | 'schedule' | 'messages' | 'profile' | 'routine-templates' | 'notifications' | 'settings';
 
-const TrainerProfileView: React.FC<{user: User, onEdit: () => void}> = ({ user, onEdit }) => (
-    <div className="w-full max-w-4xl bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg ring-1 ring-black/5 dark:ring-white/10 p-6 md:p-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start mb-8 gap-4">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Mi Perfil</h2>
-            <button onClick={onEdit} className="flex items-center space-x-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg font-semibold transition-colors w-full sm:w-auto justify-center">
-                <PencilIcon className="w-5 h-5"/>
-                <span>Editar Perfil</span>
-            </button>
-        </div>
-        
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-            <div className="flex-shrink-0 text-center">
-                <img 
-                    src={user.avatarUrl} 
-                    alt={user.name} 
-                    className="w-32 h-32 rounded-full object-cover ring-4 ring-gray-200 dark:ring-gray-700 mx-auto" 
-                />
-                <h3 className="text-2xl font-bold mt-4 text-gray-900 dark:text-white">{user.name}</h3>
-                <p className="text-gray-500 dark:text-gray-400">{user.email}</p>
+const TrainerProfileView: React.FC<{user: User, onEdit: () => void}> = ({ user, onEdit }) => {
+    const calculateAge = (birthDate?: string): number | undefined => {
+        if (!birthDate) return undefined;
+        const today = new Date();
+        const birth = new Date(birthDate);
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+            age--;
+        }
+        return age;
+    };
+
+    const displayAge = user.birthDate ? calculateAge(user.birthDate) : user.age;
+
+    return (
+        <div className="w-full max-w-4xl bg-white dark:bg-gray-800/50 rounded-2xl shadow-lg ring-1 ring-black/5 dark:ring-white/10 p-6 md:p-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start mb-8 gap-4">
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Mi Perfil</h2>
+                <button onClick={onEdit} className="flex items-center space-x-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-lg font-semibold transition-colors w-full sm:w-auto justify-center">
+                    <PencilIcon className="w-5 h-5"/>
+                    <span>Editar Perfil</span>
+                </button>
             </div>
             
-            <div className="w-full border-t md:border-t-0 md:border-l border-gray-200 dark:border-gray-700 mt-6 md:mt-0 pt-6 md:pt-0 md:pl-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
-                    <div>
-                        <h4 className="font-semibold text-gray-500 dark:text-gray-400">Teléfono</h4>
-                        <p className="text-gray-800 dark:text-gray-200">{user.phone || 'No especificado'}</p>
-                    </div>
-                    <div>
-                        <h4 className="font-semibold text-gray-500 dark:text-gray-400">Miembro Desde</h4>
-                        <p className="text-gray-800 dark:text-gray-200">{new Date(user.joinDate).toLocaleDateString()}</p>
-                    </div>
-                    <div>
-                        <h4 className="font-semibold text-gray-500 dark:text-gray-400">Género</h4>
-                        <p className="text-gray-800 dark:text-gray-200">{user.gender || 'No especificado'}</p>
-                    </div>
-                     <div>
-                        <h4 className="font-semibold text-gray-500 dark:text-gray-400">Edad</h4>
-                        <p className="text-gray-800 dark:text-gray-200">{user.age ? `${user.age} años` : 'No especificado'}</p>
-                    </div>
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
+                <div className="flex-shrink-0 text-center">
+                    <img 
+                        src={user.avatarUrl} 
+                        alt={user.name} 
+                        className="w-32 h-32 rounded-full object-cover ring-4 ring-gray-200 dark:ring-gray-700 mx-auto" 
+                    />
+                    <h3 className="text-2xl font-bold mt-4 text-gray-900 dark:text-white">{user.name}</h3>
+                    <p className="text-gray-500 dark:text-gray-400">{user.email}</p>
                 </div>
+                
+                <div className="w-full border-t md:border-t-0 md:border-l border-gray-200 dark:border-gray-700 mt-6 md:mt-0 pt-6 md:pt-0 md:pl-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
+                        <div>
+                            <h4 className="font-semibold text-gray-500 dark:text-gray-400">Teléfono</h4>
+                            <p className="text-gray-800 dark:text-gray-200">{user.phone || 'No especificado'}</p>
+                        </div>
+                        <div>
+                            <h4 className="font-semibold text-gray-500 dark:text-gray-400">Miembro Desde</h4>
+                            <p className="text-gray-800 dark:text-gray-200">{new Date(user.joinDate).toLocaleDateString()}</p>
+                        </div>
+                        <div>
+                            <h4 className="font-semibold text-gray-500 dark:text-gray-400">Género</h4>
+                            <p className="text-gray-800 dark:text-gray-200">{user.gender || 'No especificado'}</p>
+                        </div>
+                         <div>
+                            <h4 className="font-semibold text-gray-500 dark:text-gray-400">Edad</h4>
+                            <p className="text-gray-800 dark:text-gray-200">{displayAge ? `${displayAge} años` : 'No especificado'}</p>
+                        </div>
+                    </div>
 
-                <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 space-y-4">
-                     <div>
-                        <h3 className="font-semibold text-gray-500 dark:text-gray-400 mb-2">Habilidades</h3>
-                        <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{user.skills || 'No especificado'}</p>
-                     </div>
+                    <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 space-y-4">
+                         <div>
+                            <h3 className="font-semibold text-gray-500 dark:text-gray-400 mb-2">Habilidades</h3>
+                            <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{user.skills || 'No especificado'}</p>
+                         </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-);
+    );
+}
 
 
 const MyClientsView: React.FC<{
@@ -232,12 +248,29 @@ const TrainerEditProfileModal: React.FC<{user: User, onSave: (user: User) => voi
     const [formData, setFormData] = useState(user);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const calculateAge = (birthDate: string): number => {
+        if (!birthDate) return 0;
+        const today = new Date();
+        const birth = new Date(birthDate);
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+            age--;
+        }
+        return age;
+    };
+
+    const currentAge = formData.birthDate ? calculateAge(formData.birthDate) : formData.age;
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         if (name === 'emergencyContactName') {
             setFormData(prev => ({...prev, emergencyContact: { ...prev.emergencyContact, name: value, phone: prev.emergencyContact?.phone || '' }}));
         } else if (name === 'emergencyContactPhone') {
              setFormData(prev => ({...prev, emergencyContact: { ...prev.emergencyContact, phone: value, name: prev.emergencyContact?.name || '' }}));
+        } else if (name === 'birthDate') {
+             const newAge = calculateAge(value);
+             setFormData(prev => ({...prev, birthDate: value, age: newAge }));
         } else {
              setFormData(prev => ({...prev, [name]: value}));
         }
@@ -315,9 +348,13 @@ const TrainerEditProfileModal: React.FC<{user: User, onSave: (user: User) => voi
                                 <option value="Prefiero no decirlo">Prefiero no decirlo</option>
                             </select>
                         </div>
+                        <div>
+                            <label htmlFor="birthDate" className="block text-sm font-medium text-gray-600 dark:text-gray-400">Fecha de Nacimiento</label>
+                            <input type="date" name="birthDate" id="birthDate" value={formData.birthDate || ''} onChange={handleChange} className="mt-1 block w-full bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary text-gray-900 dark:text-white" />
+                        </div>
                          <div>
                             <label htmlFor="age" className="block text-sm font-medium text-gray-600 dark:text-gray-400">Edad</label>
-                            <input type="number" name="age" id="age" value={formData.age || ''} onChange={handleChange} className="mt-1 block w-full bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary text-gray-900 dark:text-white" />
+                            <input type="text" name="age" id="age" value={currentAge !== undefined ? currentAge : ''} readOnly className="mt-1 block w-full bg-gray-200/50 dark:bg-gray-700/50 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-500 dark:text-gray-400 cursor-not-allowed" />
                         </div>
                     </div>
 

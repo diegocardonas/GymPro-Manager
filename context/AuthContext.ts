@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { User, Notification, PreEstablishedRoutine, Payment, WorkoutSession, GymClass, Message, Announcement, Challenge, Achievement, EquipmentItem, IncidentReport, AICoachMessage, NutritionLog, Role, MembershipStatus } from '../types';
+import { User, Notification, PreEstablishedRoutine, Payment, WorkoutSession, GymClass, Message, Announcement, Challenge, Achievement, EquipmentItem, IncidentReport, AICoachMessage, NutritionLog, Role, MembershipStatus, ToastMessage } from '../types';
 import { MOCK_TIERS } from '../data/membershipTiers';
 
 interface AuthContextType {
@@ -17,7 +17,11 @@ interface AuthContextType {
   achievements: Achievement[];
   equipment: EquipmentItem[];
   incidents: IncidentReport[];
-
+  
+  // Toast State
+  toasts: ToastMessage[];
+  addToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning', duration?: number) => void;
+  removeToast: (id: string) => void;
 
   logout: () => void;
   updateCurrentUser: (user: User) => void;
@@ -40,7 +44,7 @@ interface AuthContextType {
   addGymClass: (gymClass: Omit<GymClass, 'id'>) => void;
   updateGymClass: (gymClass: GymClass) => void;
   deleteGymClass: (classId: string) => void;
-  bookClass: (classId: string, userId: string) => string; // returns success/error message
+  bookClass: (classId: string, userId: string) => void; // Changed return type to void, handled by toast inside
   
   sendMessage: (message: Omit<Message, 'id' | 'timestamp' | 'isRead'>) => void;
   markMessagesAsRead: (conversationId: string, userId: string) => void;
@@ -87,6 +91,10 @@ export const AuthContext = createContext<AuthContextType>({
   achievements: [],
   equipment: [],
   incidents: [],
+  
+  toasts: [],
+  addToast: () => {},
+  removeToast: () => {},
 
   logout: () => {},
   updateCurrentUser: () => {},
@@ -109,7 +117,7 @@ export const AuthContext = createContext<AuthContextType>({
   addGymClass: () => {},
   updateGymClass: () => {},
   deleteGymClass: () => {},
-  bookClass: () => '',
+  bookClass: () => {},
   
   sendMessage: () => {},
   markMessagesAsRead: () => {},

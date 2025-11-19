@@ -1,4 +1,3 @@
-
 {
     "general": {
         "appName": "GymPro Manager",
@@ -30,7 +29,8 @@
         "unassigned": "Unassigned",
         "justNow": "Just now",
         "messages": "Messages",
-        "emergencyContact": "Emergency Contact"
+        "emergencyContact": "Emergency Contact",
+        "birthDate": "Date of Birth"
     },
     "roles": {
         "ADMIN": "Administrator",

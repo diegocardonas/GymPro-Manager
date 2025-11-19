@@ -185,6 +185,20 @@ const UserDetailsModal: React.FC<{ user: User; allUsers: User[]; onClose: () => 
     const assignedTrainers = useMemo(() => trainers.filter(t => user.trainerIds?.includes(t.id)).map(t => t.name).join(', '), [trainers, user.trainerIds]);
     const clientCount = useMemo(() => clients.filter(c => c.trainerIds?.includes(user.id)).length, [clients, user.id]);
 
+    const calculateAge = (birthDate?: string): number | undefined => {
+        if (!birthDate) return undefined;
+        const today = new Date();
+        const birth = new Date(birthDate);
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+            age--;
+        }
+        return age;
+    };
+
+    const displayAge = user.birthDate ? calculateAge(user.birthDate) : user.age;
+
     const roleBg = user.role === Role.CLIENT ? 'bg-blue-500' : user.role === Role.TRAINER ? 'bg-purple-500' : 'bg-gray-500';
     // FIX: Corrected the properties of the `statusClasses` object to use the enum keys (ACTIVE, EXPIRED, PENDING) instead of Spanish string values.
     const statusClasses: Record<MembershipStatus, string> = {
@@ -229,7 +243,8 @@ const UserDetailsModal: React.FC<{ user: User; allUsers: User[]; onClose: () => 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <DetailItem label={t('admin.userDetailsModal.phone')} value={user.phone} />
                             <DetailItem label={t('admin.userDetailsModal.gender')} value={user.gender ? t(`genders.${user.gender}`) : undefined} />
-                            <DetailItem label={t('admin.userDetailsModal.age')} value={user.age ? t('admin.userDetailsModal.ageYears', { age: user.age }) : undefined} />
+                            <DetailItem label={t('admin.userDetailsModal.age')} value={displayAge ? t('admin.userDetailsModal.ageYears', { age: displayAge }) : undefined} />
+                            <DetailItem label={t('general.birthDate')} value={user.birthDate ? new Date(user.birthDate).toLocaleDateString() : undefined} />
                         </div>
                     </DetailSection>
                     
@@ -276,12 +291,29 @@ const AdminEditProfileModal: React.FC<{user: User, onSave: (user: User) => void,
     const [formData, setFormData] = useState(user);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const calculateAge = (birthDate: string): number => {
+        if (!birthDate) return 0;
+        const today = new Date();
+        const birth = new Date(birthDate);
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+            age--;
+        }
+        return age;
+    };
+
+    const currentAge = formData.birthDate ? calculateAge(formData.birthDate) : formData.age;
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         if (name === 'emergencyContactName') {
             setFormData(prev => ({...prev, emergencyContact: { ...prev.emergencyContact, name: value, phone: prev.emergencyContact?.phone || '' }}));
         } else if (name === 'emergencyContactPhone') {
              setFormData(prev => ({...prev, emergencyContact: { ...prev.emergencyContact, phone: value, name: prev.emergencyContact?.name || '' }}));
+        } else if (name === 'birthDate') {
+             const newAge = calculateAge(value);
+             setFormData(prev => ({...prev, birthDate: value, age: newAge }));
         } else {
              setFormData(prev => ({...prev, [name]: value}));
         }
@@ -359,9 +391,13 @@ const AdminEditProfileModal: React.FC<{user: User, onSave: (user: User) => void,
                                 <option value="Prefiero no decirlo">{t('genders.Prefiero no decirlo')}</option>
                             </select>
                         </div>
+                        <div>
+                            <label htmlFor="birthDate" className="block text-sm font-medium text-gray-600 dark:text-gray-400">{t('general.birthDate')}</label>
+                            <input type="date" name="birthDate" id="birthDate" value={formData.birthDate || ''} onChange={handleChange} className="mt-1 block w-full bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary text-gray-900 dark:text-white" />
+                        </div>
                          <div>
                             <label htmlFor="age" className="block text-sm font-medium text-gray-600 dark:text-gray-400">{t('admin.editProfileModal.age')}</label>
-                            <input type="number" name="age" id="age" value={formData.age || ''} onChange={handleChange} className="mt-1 block w-full bg-gray-200 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-primary focus:border-primary text-gray-900 dark:text-white" />
+                            <input type="text" name="age" id="age" value={currentAge !== undefined ? currentAge : ''} readOnly className="mt-1 block w-full bg-gray-200/50 dark:bg-gray-700/50 border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-500 dark:text-gray-400 cursor-not-allowed" />
                         </div>
                     </div>
 
